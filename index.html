@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="헬로카봇 로봇 이름(초성 가능)으로 나오는 시즌과 회차를 찾아요.">
+<meta name="theme-color" content="#13296A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="카봇 찾기">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>.wrap{padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(40px,calc(24px + env(safe-area-inset-bottom)))}</style>
+<title>헬로카봇 출연편 찾기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root {
+  --bg: #EDF1F6;
+  --surface: #FFFFFF;
+  --surface-2: #F4F6FA;
+  --ink: #141A23;
+  --ink-2: #445063;
+  --ink-3: #6F7B8F;
+  --line: #D9E0E9;
+  --red: #D7262F;
+  --red-soft: #FDE7E8;
+  --navy: #1C3A8C;
+  --navy-deep: #13296A;
+  --navy-soft: #E4EAF9;
+  --link: #1C3A8C;
+  --yellow: #FFC619;
+  --yellow-soft: #FFF3CC;
+  --yellow-ink: #6B4E00;
+  --plate: #FFFFFF;
+  --plate-ink: #12151B;
+  --plate-edge: #2A303B;
+  --shadow: 0 1px 2px rgba(20, 26, 35, .06), 0 8px 22px rgba(20, 26, 35, .07);
+  --display: 'Black Han Sans', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --body: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  --sign: 'Do Hyeon', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0F1319;
+    --surface: #1A1F28;
+    --surface-2: #212733;
+    --ink: #EDF1F7;
+    --ink-2: #B4BECD;
+    --ink-3: #8994A7;
+    --line: #2D3543;
+    --red: #FF5A61;
+    --red-soft: #3A1D22;
+    --navy: #3F63C9;
+    --navy-deep: #182E6E;
+    --navy-soft: #1E2A47;
+    --link: #93AEFF;
+    --yellow: #FFD04A;
+    --yellow-soft: #3A3117;
+    --yellow-ink: #FFDD7A;
+    --plate: #F3F5F9;
+    --plate-ink: #12151B;
+    --plate-edge: #0B0E13;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 22px rgba(0, 0, 0, .28);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0F1319;
+  --surface: #1A1F28;
+  --surface-2: #212733;
+  --ink: #EDF1F7;
+  --ink-2: #B4BECD;
+  --ink-3: #8994A7;
+  --line: #2D3543;
+  --red: #FF5A61;
+  --red-soft: #3A1D22;
+  --navy: #3F63C9;
+  --navy-deep: #182E6E;
+  --navy-soft: #1E2A47;
+  --link: #93AEFF;
+  --yellow: #FFD04A;
+  --yellow-soft: #3A3117;
+  --yellow-ink: #FFDD7A;
+  --plate: #F3F5F9;
+  --plate-ink: #12151B;
+  --plate-edge: #0B0E13;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 22px rgba(0, 0, 0, .28);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.55 var(--body);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 16px 16px 40px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; border-radius: 8px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- hero: the toy box ---------- */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 42%);
+  gap: 8px;
+  background: var(--navy-deep);
+  color: #fff;
+  border-radius: 26px;
+  padding: 22px 18px 58px 22px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero::before { /* headlight glow */
+  content: "";
+  position: absolute; inset: -40% -20% auto auto;
+  width: 70%; aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(255, 198, 25, .22), transparent 62%);
+  z-index: -1;
+}
+.hero::after { /* lane markings */
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 18px; height: 5px;
+  background: repeating-linear-gradient(90deg, var(--yellow) 0 26px, transparent 26px 44px);
+  opacity: .9;
+}
+.eyebrow {
+  display: inline-block;
+  font: 500 12px/1 var(--body);
+  letter-spacing: .08em;
+  color: #FFE08A;
+  margin: 2px 0 10px;
+}
+.hero h1 {
+  margin: 0;
+  font: 400 clamp(29px, 7.6vw, 46px)/1.12 var(--display);
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.hero h1 em { font-style: normal; color: var(--yellow); }
+.hero-sub { margin: 12px 0 0; color: #C9D5F5; font-size: 13.5px; max-width: 26em; }
+.hero-cards { position: relative; min-height: 170px; }
+.tcard {
+  position: absolute;
+  background: #fff;
+  border-radius: 14px;
+  padding: 6px 6px 0;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
+  display: flex; flex-direction: column; align-items: center;
+}
+.tcard img { display: block; width: 100%; height: auto; border-radius: 9px; }
+.tcard span {
+  font: 400 13px/1 var(--display);
+  color: #fff;
+  padding: 6px 10px 7px;
+  margin: 5px -6px 0;
+  align-self: stretch;
+  text-align: center;
+  border-radius: 0 0 14px 14px;
+}
+.tcard.penta { width: 70%; right: 0; top: 0; transform: rotate(4deg); flex-direction: column-reverse; padding: 0 6px 6px; }
+.tcard.penta span { background: #1C3A8C; margin: 0 -6px 5px; border-radius: 14px 14px 0 0; }
+.tcard.ace { width: 52%; left: 0; bottom: -18px; transform: rotate(-6deg); }
+.tcard.ace span { background: #D7262F; }
+.hero-cards.art { min-height: 0; display: flex; align-items: center; justify-content: center; }
+.hero-art { display: block; width: 100%; height: auto; max-height: 250px; overflow: visible; }
+@media (min-width: 560px) {
+  .hero { padding: 30px 26px 64px 30px; }
+  .hero-cards { min-height: 230px; }
+}
+
+/* ---------- search ---------- */
+.search {
+  position: relative;
+  margin: -34px 10px 0;
+  z-index: 2;
+  display: flex; align-items: center;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: var(--shadow), 0 4px 0 var(--ink);
+}
+.search svg { flex: none; margin-left: 14px; color: var(--ink-3); }
+.search input {
+  flex: 1; min-width: 0;
+  border: 0; outline: 0; background: transparent;
+  font: 500 18px/1.2 var(--body);
+  color: var(--ink);
+  padding: 16px 10px 16px 10px;
+}
+.search input::placeholder { color: var(--ink-3); font-weight: 400; }
+.search input::-webkit-search-cancel-button { display: none; }
+.search:focus-within { border-color: var(--navy); box-shadow: var(--shadow), 0 4px 0 var(--navy); }
+.clear {
+  flex: none;
+  width: 40px; height: 40px; margin-right: 6px;
+  border: 0; border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 22px; line-height: 1;
+  cursor: pointer;
+}
+.hint { margin: 14px 12px 0; color: var(--ink-3); font-size: 13px; }
+.hint b { color: var(--ink-2); font-weight: 500; }
+.onair { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 10px 0; }
+.onair button {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 4px 11px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink-2);
+  font-size: 12.5px; cursor: pointer;
+}
+.onair button:hover { border-color: var(--navy); color: var(--ink); }
+.onair b { font-weight: 700; color: var(--red); }
+.onair b.soon { color: var(--link); }
+
+/* ---------- chips ---------- */
+.shelf { margin: 22px 0 0; }
+.shelf-title {
+  display: flex; align-items: baseline; gap: 8px;
+  margin: 0 2px 10px;
+  font: 700 13px/1.3 var(--body);
+  color: var(--ink-2);
+  letter-spacing: .02em;
+}
+.shelf-title small { font-weight: 400; color: var(--ink-3); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14.5px; font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+}
+.chip:hover { border-color: var(--navy); }
+.chip:active { transform: scale(.97); }
+.chip small { font-size: 11.5px; font-weight: 500; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.chip.hot { border-color: transparent; background: var(--red); color: #fff; }
+.chip.hot small { color: #FFD6D8; }
+.chip.navy { border-color: transparent; background: var(--navy); color: #fff; }
+.chip.navy small { color: #C9D5F5; }
+.chip.ghost { min-height: 32px; padding: 4px 10px; font-size: 13.5px; background: var(--surface-2); }
+
+/* ---------- results ---------- */
+.bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 26px 2px 12px;
+}
+.bar p { margin: 0; color: var(--ink-2); font-size: 14px; }
+.bar p b { color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 7px 12px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 700; }
+.list { display: grid; gap: 14px; }
+
+.bot {
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 18px 16px 12px;
+  scroll-margin-top: 12px;
+}
+.bot-head { display: flex; align-items: center; gap: 12px; }
+.bot-thumb {
+  flex: none; width: 54px; height: 54px;
+  border-radius: 12px; background: #fff; object-fit: contain;
+  border: 1px solid var(--line);
+}
+.bot-title { flex: 1; min-width: 0; }
+.bot-name { margin: 0; font: 400 26px/1.15 var(--display); letter-spacing: -.005em; }
+.bot-name mark { background: linear-gradient(transparent 58%, var(--yellow) 58%); color: inherit; padding: 0 1px; }
+.bot-meta { margin: 3px 0 0; color: var(--ink-3); font-size: 13px; }
+.bot-count {
+  flex: none; text-align: center;
+  font: 400 26px/1 var(--sign);
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+.bot-count span { display: block; margin-top: 3px; font: 500 11px/1 var(--body); color: var(--ink-3); }
+.alias { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+.alias mark { background: var(--yellow-soft); color: var(--ink); border-radius: 3px; padding: 0 2px; }
+.rel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 13px; color: var(--ink-3); }
+
+.debut {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center;
+  margin: 14px 0 6px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--yellow-soft);
+}
+.debut-label { grid-column: 1 / -1; font: 700 12px/1 var(--body); color: var(--yellow-ink); letter-spacing: .06em; }
+.debut-title { font-weight: 700; font-size: 15.5px; }
+.debut-title small { display: block; font-weight: 400; font-size: 12.5px; color: var(--ink-2); }
+
+/* license plate: blue country band + episode number */
+.plate {
+  flex: none;
+  display: inline-flex; align-items: stretch;
+  height: 30px;
+  border: 2px solid var(--plate-edge);
+  border-radius: 6px;
+  background: var(--plate);
+  color: var(--plate-ink);
+  overflow: hidden;
+  font: 400 16px/1 var(--sign);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .12);
+}
+.plate i {
+  display: grid; place-items: center;
+  min-width: 26px; padding: 0 4px;
+  background: #1C3A8C; color: #fff;
+  font: 400 11px/1 var(--sign); font-style: normal; letter-spacing: .02em;
+}
+.plate b { display: grid; place-items: center; min-width: 40px; padding: 0 7px; font-weight: 400; }
+
+.grp { border-top: 1px solid var(--line); }
+.grp > summary {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 2px;
+  cursor: pointer;
+  list-style: none;
+}
+.grp > summary::-webkit-details-marker, .ep > summary::-webkit-details-marker { display: none; }
+.grp > summary::before {
+  content: ""; flex: none;
+  width: 8px; height: 8px;
+  border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+  transform: rotate(-45deg); margin: 0 4px 0 2px;
+  transition: transform .15s;
+}
+.grp[open] > summary::before { transform: rotate(45deg); }
+.grp-name { font-weight: 700; }
+.grp-year { color: var(--ink-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.grp-n {
+  margin-left: auto;
+  font: 400 15px/1 var(--sign); color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.grp.parent > summary .grp-name { color: var(--link); }
+.ep-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 2px; }
+.ep > summary {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px;
+  min-height: 46px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.ep > summary:hover { background: var(--surface-2); }
+.ep[open] > summary { background: var(--navy-soft); }
+.ep-title { flex: 1 1 10em; min-width: 0; font-weight: 500; }
+.ep-series { display: block; font-size: 12px; font-weight: 400; color: var(--ink-3); }
+.tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 11.5px; font-weight: 500; line-height: 1.5;
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  background: var(--surface);
+}
+.tag.star { border-color: transparent; background: var(--yellow); color: #3D2C00; font-weight: 700; }
+.tag.minor { border-style: dashed; color: var(--ink-3); }
+.ep-more { margin: 4px 8px 12px 8px; padding: 10px 12px 12px; border-left: 3px solid var(--navy); }
+.ep-note { margin: 0 0 10px; font-size: 13px; color: var(--ink-2); }
+.ep-cast-label { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--ink-3); letter-spacing: .04em; }
+.copy {
+  margin-top: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface);
+  border-radius: 10px; padding: 7px 12px;
+  font-size: 13px; cursor: pointer; color: var(--ink-2);
+}
+.copy:hover { border-color: var(--navy); color: var(--ink); }
+.empty-note { margin: 12px 0 4px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); color: var(--ink-2); font-size: 14px; }
+.more {
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px; border-radius: 14px;
+  border: 1px dashed var(--line); background: transparent;
+  color: var(--ink-2); cursor: pointer;
+}
+
+.titles { background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); padding: 10px 8px; }
+.titles h2 { margin: 6px 8px 6px; font-size: 14px; color: var(--ink-2); }
+.none { text-align: center; padding: 30px 16px; color: var(--ink-2); }
+.none strong { display: block; font: 400 22px/1.3 var(--display); color: var(--ink); margin-bottom: 6px; }
+
+/* ---------- 도감 (browse) ---------- */
+.dex { margin-top: 30px; }
+.dex h2 { margin: 0 2px 4px; font: 400 24px/1.2 var(--display); }
+.dex > p { margin: 0 2px 16px; color: var(--ink-3); font-size: 13.5px; }
+.dex-grp { padding: 14px 0; border-top: 1px solid var(--line); }
+.dex-grp h3 { display: flex; align-items: baseline; gap: 8px; margin: 0 2px 10px; font-size: 14.5px; }
+.dex-grp h3 span { font-weight: 400; color: var(--ink-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+
+footer { margin: 34px 4px 0; color: var(--ink-3); font-size: 12px; line-height: 1.7; }
+footer p { margin: 0 0 6px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  background: var(--ink); color: var(--bg);
+  padding: 10px 16px; border-radius: 12px;
+  font-size: 14px; box-shadow: var(--shadow);
+  z-index: 10;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">헬로카봇 출연편 찾기</p>
+      <h1>이 카봇,<br><em>몇 화</em>에 나와?</h1>
+      <p class="hero-sub">로봇 이름을 치면 나오는 시즌과 회차를 바로 알려줘요.</p>
+    </div>
+    <div class="hero-cards art" aria-hidden="true"><svg class="hero-art" viewBox="0 0 230 250" role="img" aria-label="자동차 로봇 두 대" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="visor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E4F1FF"/>
+      <stop offset="1" stop-color="#9CC8F5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- navy robot (back) -->
+  <g transform="translate(96 18) rotate(5 60 110)">
+    <path d="M60 4 L74 24 L60 18 L46 24 Z" fill="#FFC619"/>
+    <rect x="-8" y="30" width="14" height="24" rx="5" fill="#2A4AA3"/>
+    <rect x="114" y="30" width="14" height="24" rx="5" fill="#2A4AA3"/>
+    <rect x="4" y="18" width="112" height="84" rx="22" fill="#3F63C9" stroke="#0C1B4A" stroke-width="3"/>
+    <rect x="16" y="28" width="88" height="34" rx="12" fill="url(#visor)"/>
+    <path d="M26 58 L48 30 H58 L36 58 Z" fill="#fff" opacity=".45"/>
+    <circle cx="44" cy="45" r="8" fill="#13296A"/>
+    <circle cx="76" cy="45" r="8" fill="#13296A"/>
+    <circle cx="47" cy="42" r="2.6" fill="#fff"/>
+    <circle cx="79" cy="42" r="2.6" fill="#fff"/>
+    <rect x="14" y="72" width="20" height="12" rx="4" fill="#FFD34D"/>
+    <rect x="86" y="72" width="20" height="12" rx="4" fill="#FFD34D"/>
+    <rect x="42" y="70" width="36" height="18" rx="5" fill="#101521"/>
+    <path d="M51 73 V85 M60 73 V85 M69 73 V85" stroke="#56627A" stroke-width="3" stroke-linecap="round"/>
+    <rect x="16" y="106" width="88" height="70" rx="16" fill="#2E50AE" stroke="#0C1B4A" stroke-width="3"/>
+    <circle cx="10" cy="118" r="17" fill="#141925" stroke="#A9B3C4" stroke-width="5"/>
+    <circle cx="110" cy="118" r="17" fill="#141925" stroke="#A9B3C4" stroke-width="5"/>
+    <rect x="-2" y="136" width="18" height="40" rx="8" fill="#3F63C9" stroke="#0C1B4A" stroke-width="3"/>
+    <rect x="104" y="136" width="18" height="40" rx="8" fill="#3F63C9" stroke="#0C1B4A" stroke-width="3"/>
+    <rect x="34" y="124" width="52" height="20" rx="4" fill="#fff" stroke="#101521" stroke-width="2.5"/>
+    <rect x="34" y="124" width="11" height="20" rx="3" fill="#1C3A8C"/>
+    <text x="66" y="139" text-anchor="middle" font-family="'Do Hyeon','Malgun Gothic',sans-serif" font-size="15" fill="#101521">05</text>
+    <rect x="28" y="178" width="26" height="32" rx="6" fill="#23408F"/>
+    <rect x="66" y="178" width="26" height="32" rx="6" fill="#23408F"/>
+    <rect x="22" y="206" width="36" height="12" rx="5" fill="#FFC619"/>
+    <rect x="62" y="206" width="36" height="12" rx="5" fill="#FFC619"/>
+  </g>
+
+  <!-- red robot (front) -->
+  <g transform="translate(8 86) rotate(-7 50 80)">
+    <line x1="50" y1="14" x2="50" y2="-2" stroke="#FFC619" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="50" cy="-4" r="7" fill="#FFC619" stroke="#8A5A00" stroke-width="2"/>
+    <rect x="-6" y="28" width="12" height="20" rx="5" fill="#B7212A"/>
+    <rect x="94" y="28" width="12" height="20" rx="5" fill="#B7212A"/>
+    <rect x="2" y="14" width="96" height="70" rx="20" fill="#E53A40" stroke="#5E0E14" stroke-width="3"/>
+    <rect x="12" y="23" width="76" height="29" rx="11" fill="url(#visor)"/>
+    <path d="M20 49 L39 25 H47 L28 49 Z" fill="#fff" opacity=".45"/>
+    <circle cx="37" cy="38" r="7" fill="#13296A"/>
+    <circle cx="63" cy="38" r="7" fill="#13296A"/>
+    <circle cx="39.5" cy="35.5" r="2.3" fill="#fff"/>
+    <circle cx="65.5" cy="35.5" r="2.3" fill="#fff"/>
+    <rect x="12" y="60" width="17" height="11" rx="4" fill="#FFD34D"/>
+    <rect x="71" y="60" width="17" height="11" rx="4" fill="#FFD34D"/>
+    <path d="M36 62 Q50 72 64 62" fill="none" stroke="#101521" stroke-width="4" stroke-linecap="round"/>
+    <rect x="14" y="88" width="72" height="58" rx="14" fill="#C82E35" stroke="#5E0E14" stroke-width="3"/>
+    <circle cx="9" cy="98" r="14" fill="#141925" stroke="#A9B3C4" stroke-width="4.5"/>
+    <circle cx="91" cy="98" r="14" fill="#141925" stroke="#A9B3C4" stroke-width="4.5"/>
+    <rect x="0" y="112" width="16" height="34" rx="7" fill="#E53A40" stroke="#5E0E14" stroke-width="3"/>
+    <rect x="84" y="112" width="16" height="34" rx="7" fill="#E53A40" stroke="#5E0E14" stroke-width="3"/>
+    <rect x="29" y="102" width="42" height="17" rx="3.5" fill="#fff" stroke="#101521" stroke-width="2.2"/>
+    <rect x="29" y="102" width="9" height="17" rx="3" fill="#1C3A8C"/>
+    <text x="55" y="115" text-anchor="middle" font-family="'Do Hyeon','Malgun Gothic',sans-serif" font-size="13" fill="#101521">01</text>
+    <rect x="26" y="148" width="21" height="24" rx="5" fill="#9E1F27"/>
+    <rect x="53" y="148" width="21" height="24" rx="5" fill="#9E1F27"/>
+    <rect x="21" y="168" width="30" height="10" rx="4.5" fill="#FFC619"/>
+    <rect x="49" y="168" width="30" height="10" rx="4.5" fill="#FFC619"/>
+  </g>
+</svg></div>
+  </header>
+
+  <div class="search" role="search">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2.4"/><path d="M15.5 15.5 20 20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <label for="q" class="sr-only">카봇 이름 검색</label>
+    <input id="q" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="이름이나 초성 (예: ㅍㅌㅅㅌ)">
+    <button id="clear" class="clear" type="button" aria-label="검색어 지우기" hidden>×</button>
+  </div>
+  <p class="hint">초성만 쳐도 돼요 — <b>ㅇㅇㅅ</b> → 에이스, <b>ㅍㅌ</b> → 펜타스톰<br>편 제목 일부(예: 빙산)로도 찾을 수 있어요.</p>
+  <div class="onair" id="onair" hidden></div>
+
+  <section class="shelf" id="recent-shelf" hidden>
+    <h2 class="shelf-title">최근 찾은 카봇</h2>
+    <div class="chips" id="recent"></div>
+  </section>
+  <section class="shelf" id="popular-shelf">
+    <h2 class="shelf-title">많이 나오는 카봇 <small>숫자는 출연 편수</small></h2>
+    <div class="chips" id="popular"></div>
+  </section>
+
+  <main id="results" aria-live="polite"></main>
+
+  <footer>
+    <p id="about"></p>
+    <p>비공식 팬 도구예요. 출연 정보는 나무위키 「헬로카봇/회차목록」의 ‘출연 카봇’ 칸을 기준으로 정리했어요(나무위키 CC BY-NC-SA 2.0 KR). 캐릭터의 권리는 초이락(CHOIROCK)에 있어요. 로봇 그림은 이 앱용으로 새로 그렸어요.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="application/json" id="carbot-data">{"updated":"2026-09-26","source":"나무위키 「헬로카봇/회차목록」·「카봇(헬로카봇)/목록」·극장판 문서","series":[{"id":"s1","kind":"본편","name":"시즌 1","sub":"","year":2014,"aired":26},{"id":"x:펜타스톰","kind":"스페셜","name":"펜타스톰","sub":"","year":2014,"aired":4},{"id":"x:영웅의 등장","kind":"스페셜","name":"영웅의 등장","sub":"","year":2015,"aired":4},{"id":"s2","kind":"본편","name":"시즌 2","sub":"","year":2015,"aired":26},{"id":"s3","kind":"본편","name":"시즌 3","sub":"","year":2015,"aired":26},{"id":"s4","kind":"본편","name":"시즌 4","sub":"","year":2016,"aired":26},{"id":"s5","kind":"본편","name":"시즌 5","sub":"","year":2017,"aired":52},{"id":"x:지구를 부탁해","kind":"스페셜","name":"지구를 부탁해","sub":"","year":2017,"aired":4},{"id":"s6","kind":"본편","name":"시즌 6","sub":"","year":2018,"aired":26},{"id":"m1","kind":"극장판","name":"백악기 시대","sub":"","year":2018,"aired":1},{"id":"x:쿵 시리즈","kind":"외전","name":"헬로카봇 쿵","sub":"","year":2018,"aired":26},{"id":"x:동물 구조대","kind":"스페셜","name":"동물 구조대","sub":"","year":2019,"aired":4},{"id":"m2","kind":"극장판","name":"옴파로스 섬의 비밀","sub":"","year":2019,"aired":1},{"id":"x:알카봇과 동물 친구들","kind":"외전","name":"쿵: 알카봇과 동물 친구들","sub":"","year":2019,"aired":6},{"id":"s7","kind":"본편","name":"시즌 7","sub":"유니버스","year":2019,"aired":38},{"id":"x:헬로 스피너블","kind":"스페셜","name":"헬로 스피너블","sub":"","year":2019,"aired":4},{"id":"m3","kind":"극장판","name":"달나라를 구해줘!","sub":"","year":2019,"aired":1},{"id":"s8","kind":"본편","name":"시즌 8","sub":"유니버스","year":2020,"aired":26},{"id":"s9","kind":"본편","name":"시즌 9","sub":"펜타스톰 X 리턴즈","year":2020,"aired":26},{"id":"s10","kind":"본편","name":"시즌 10","sub":"뱅","year":2021,"aired":26},{"id":"s11","kind":"본편","name":"시즌 11","sub":"쌈바","year":2021,"aired":28},{"id":"s12","kind":"본편","name":"시즌 12","sub":"붐바","year":2022,"aired":39},{"id":"m4","kind":"극장판","name":"수상한 마술단의 비밀","sub":"","year":2022,"aired":1},{"id":"x:헬로카봇×메카드볼","kind":"스페셜","name":"헬로카봇×메카드볼","sub":"","year":2023,"aired":4},{"id":"s13","kind":"본편","name":"시즌 13","sub":"젬","year":2023,"aired":26},{"id":"s14","kind":"본편","name":"시즌 14","sub":"X","year":2023,"aired":26},{"id":"s15","kind":"본편","name":"시즌 15","sub":"스타가디언","year":2024,"aired":39},{"id":"x:올스타","kind":"스페셜","name":"올스타","sub":"","year":2024,"aired":26},{"id":"x:올스타 : 오리지널","kind":"스페셜","name":"올스타: 오리지널","sub":"","year":2025,"aired":13},{"id":"s16","kind":"본편","name":"시즌 16","sub":"용사","year":2025,"aired":26},{"id":"s17","kind":"본편","name":"시즌 17","sub":"용사2","year":2026,"aired":13,"planned":26},{"id":"s18","kind":"본편","name":"시즌 18","sub":"비밀수사대","year":null,"aired":0,"upcoming":1}],"episodes":[[0,"1화","내 친구 헬로 카봇","2014-08-02","차탄, 전다해, 차산, 카봇 에이스 첫 등장",[[1,"",[]]]],[0,"2화","가족 여행","2014-08-09","바둑이 첫 등장",[[1,"",[]]]],[0,"3화","바둑이를 구하라!","2014-08-16","수지 첫 등장",[[1,"",[]]]],[0,"4화","캠핑장에서 생긴 일","2014-08-23","카봇 호크, 황장군 가족 첫 등장",[[6,"",[]]]],[0,"5화","모기와의 전쟁","2014-08-30","첫번째 미해결 에피소드",[[6,"",[]]]],[0,"6화","자동차극장에서 생긴 일","2014-09-06","",[[1,"",[]],[6,"",[]]]],[0,"7화","우리 집을 부탁해","2014-09-13","모나, 카봇 프론 첫 등장",[[6,"",[]],[2,"",[]]]],[0,"8화","뺑소니를 잡아라!","2014-09-27","",[[1,"",[]],[6,"",[]],[2,"",["특수차"]]]],[0,"9화","우주를 지켜라!","2014-10-04","",[[1,"",[]],[6,"",[]]]],[0,"10화","조각상을 지켜라","2014-10-25","카봇 댄디, TT단 첫 등장",[[3,"",[]]]],[0,"11화","눈 오는 날 생긴 일","2014-11-08","정대기 기자의 첫 등장",[[1,"",[]],[6,"",[]]]],[0,"12화","공룡뼈를 지켜라!","2014-11-15","",[[6,"",[]],[2,"",[]]]],[0,"13화","키즈파크에서 생긴 일","2014-11-22","큐브 도난/분실 사건의 시작",[[2,"",[]]]],[0,"14화","동물원에서 생긴 일","2014-11-29","",[[2,"",[]],[3,"",[]]]],[0,"15화","도시의 영웅","2014-12-06","",[[1,"",["특수차"]],[2,"",["특수차"]],[3,"",["특수차"]]]],[0,"16화","은행에서 생긴 일","2014-12-13","카봇 스카이 첫 등장",[[4,"",["특수차"]],[1,"",["특수차"]],[3,"",["특수차"]]]],[0,"17화","RC카가 된 카봇","2014-12-20","",[[4,"",[]],[2,"",[]]]],[0,"18화","엄마의 건망증","2014-12-27","",[[6,"",[]]]],[0,"19화","잠수함을 구해줘","2015-01-03","S라인 첫 등장",[[6,"",[]],[4,"",[]],[3,"",[]]]],[0,"20화","공룡이 살아났다","2015-01-10","",[[4,"",[]],[3,"",[]]]],[0,"21화","도시괴담","2015-01-17","찌릿봇 첫 등장",[[2,"",["특수차"]],[3,"",[]]]],[0,"22화","어린이 경찰캠프","2015-01-24","",[[6,"",[]],[2,"",[]]]],[0,"23화","펜타스톰의 탄생","2015-01-31","카봇 스톰 첫 등장 · 펜타스톰 첫 합체, 마이스터 목소리만 첫 공개",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]],[9,"",["음성출연"]],[0,"",[]]]],[0,"24화","구리구리를 막아라!","2015-02-07","",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]]]],[0,"25화","한강에서 생긴 일","2015-02-14","",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]]]],[0,"26화","운석을 막아라","2015-02-28","1기 최종회, 스페셜 펜타스톰 1~4화까지 이어진 에피소드다.",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]]]],[1,"1화","겨울 이야기 - 남극에서 온 펭귄","2014-12-08","펭토킹 첫 등장",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]],[0,"",[]]]],[1,"2화","봄 이야기 - 말벌의 공격","2014-12-09","",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]],[0,"",[]]]],[1,"3화","여름 이야기 - 수박 서리를 막아라","2014-12-10","",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]],[0,"",[]]]],[1,"4화","가을 이야기 - 메뚜기를 막아라","2014-12-11","펜타스톰 최종화",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]],[0,"",[]]]],[2,"1편","큐브를 지켜라","2015-04-30","큐브 도난의 정점이자 마지막 에피소드",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]]]],[2,"2편","카봇 트루의 등장","2015-04-30","카봇 트루 첫 등장 · 카봇 소환 아이템인 큐브에서 시계로 업그레이드",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]],[15,"",[]],[9,"",["음성출연"]]]],[2,"3편","오줌싸개 유령","2015-05-01","G라인 첫 등장",[[1,"",[]],[6,"",[]],[15,"",[]]]],[2,"4편","최고다, 아티!","2015-05-01","카봇 아티 첫 등장",[[8,"",[]]]],[3,"1화","불꽃놀이 소동","2015-05-30","T라인 첫 등장",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]]]],[3,"2화","바둑이의 첫사랑","2015-06-06","카봇 아티 본편 첫 등장",[[2,"",[]],[8,"",[]]]],[3,"3화","초콜릿 대소동","2015-06-13","카봇 본 첫 등장",[[16,"",[]]]],[3,"4화","도깨비불 소동","2015-06-20","",[[8,"",[]]]],[3,"5화","여우를 구해줘","2015-06-27","구미호 첫 등장",[[16,"",[]]]],[3,"6화","장난감 로봇을 찾아라","2015-07-11","M라인 첫 등장",[[3,"",[]],[16,"",[]]]],[3,"7화","잃어버린 호크의 기억","2015-07-18","카봇 마이스터 첫 등장",[[1,"",[]],[6,"",[]],[2,"",[]],[9,"",[]]]],[3,"8화","오싹오싹 동굴의 비밀","2015-07-25","카봇 트루 본편 첫 등장",[[15,"",[]],[9,"",[]],[5,"",[]]]],[3,"9화","매미 울음소리","2015-08-01","",[[1,"",["특수차"]],[6,"",[]],[2,"",["특수차"]],[3,"",["특수차"]],[4,"",["특수차"]],[5,"",[]]]],[3,"10화","비 오는 날 생긴 일","2015-08-08","",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]],[9,"",["사진출연"]]]],[3,"11화","우주 해적을 막아라","2015-08-22","꾸질꾸질 첫 등장",[[2,"",[]],[4,"",[]]]],[3,"12화","아기돌보기는 어려워","2015-08-29","카봇 삼총사 첫 등장",[[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[3,"13화","바람아 멈춰라","2015-09-05","",[[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[3,"14화","파리로봇과의 대결","2015-09-12","",[[4,"",[]],[9,"",[]],[8,"",[]]]],[3,"15화","소풍가서 생긴 일","2015-09-19","카봇 세이버 첫 등장",[[2,"",[]],[10,"",[]],[16,"",["음성출연"]]]],[3,"16화","섬마을에서 생긴 일","2015-10-03","",[[15,"",[]],[10,"",[]]]],[3,"17화","축구장이 필요해","2015-10-10","",[[2,"",[]],[3,"",[]],[15,"",[]],[10,"",[]]]],[3,"18화","목장에서 생긴 일","2015-10-17","",[[16,"",[]],[8,"",[]],[15,"",[]]]],[3,"19화","마이스터 카봇 캠프","2015-10-24","",[[9,"",[]],[15,"",[]],[3,"",[]],[4,"",[]],[16,"",[]],[8,"",[]],[1,"",[]],[6,"",[]],[2,"",[]],[5,"",[]]]],[3,"20화","로드 세이버의 탄생","2015-10-31","카봇 로드세이버 첫 합체",[[8,"",["특수차"]],[9,"",["특수차"]],[10,"",[]],[7,"",[]]]],[3,"21화","마술을 보여줘","2015-11-07","",[[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[3,"22화","사인을 받아라","2015-11-14","",[[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[3,"23화","식충식물을 막아라","2015-11-21","",[[9,"",["특수차"]],[15,"",[]],[8,"",["특수차"]],[10,"",[]]]],[3,"24화","마니또 카봇","2015-11-28","",[[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[3,"25화","우주해적의 습격 (상)","2015-12-05","",[[2,"",[]],[4,"",[]],[9,"",[]],[8,"",[]],[10,"",[]],[15,"",[]]]],[3,"26화","우주해적의 습격 (하)","2015-12-12","2기 최종회",[[9,"",["특수차"]],[8,"",["특수차"]],[10,"",[]],[0,"",[]],[15,"",[]]]],[4,"1화","바다를 구해줘","2015-12-19","카봇 마이티가드 첫 등장.",[[17,"",[]],[16,"",[]],[15,"",[]]]],[4,"2화","보물을 찾아라","2015-12-26","",[[16,"",[]],[15,"",[]]]],[4,"3화","양말도 한짝 신발도 한짝","2016-01-09","",[[16,"",[]],[15,"",[]]]],[4,"4화","산불을 막아라","2016-01-16","",[[17,"",[]],[1,"",["특수차"]],[3,"",["특수차"]]]],[4,"5화","선생님의 소개팅","2016-01-23","",[[9,"",["특수차"]],[16,"",[]],[10,"",[]]]],[4,"6화","노파라 빌딩을 구해줘","2016-01-30","",[[17,"",[]],[10,"",[]]]],[4,"7화","장난꾸러기 우가바","2016-02-13","카봇 우가바 첫 등장",[[27,"",[]],[9,"",[]],[8,"",[]],[10,"",[]]]],[4,"8화","불량식품을 없애줘","2016-02-27","아티가 단독체로 택시모드로 변신한 유일한 에피소드",[[9,"",["특수차"]],[8,"",["특수차"]],[10,"",[]]]],[4,"9화","달려라 천둥","2016-03-05","",[[27,"",[]],[16,"",[]],[15,"",[]]]],[4,"10화","K-캅스의 등장","2016-03-19","카봇 K-캅스 첫 등장.",[[2,"",["특수차"]],[18,"",[]]]],[4,"11화","카봇 아르바이트","2016-03-26","",[[6,"",[]],[2,"",[]],[4,"",[]],[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[4,"12화","강아지를 찾아줘","2016-04-02","",[[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[4,"13화","달에서 생긴 일","2016-04-09","시계를 이용한 공간이동 첫 시전. · 트럭봇 첫등장",[[9,"",["특수차"]],[15,"",[]],[8,"",["특수차"]],[10,"",[]],[17,"",[]]]],[4,"14화","가뭄을 막아줘","2016-04-16","",[[17,"",[]],[6,"",[]],[4,"",[]]]],[4,"15화","사라진 도시가스","2016-04-23","",[[17,"",[]],[18,"",[]],[2,"",[]]]],[4,"16화","청소를 부탁해","2016-04-30","클링클링 첫 등장",[[18,"",[]],[27,"",[]]]],[4,"17화","비행카봇 골드렉스","2016-05-07","카봇 골드렉스 첫 등장.",[[12,"",[]],[14,"",[]],[13,"",[]],[28,"",[]],[11,"",[]]]],[4,"18화","사랑해 세이버","2016-05-14","",[[10,"",[]],[9,"",[]],[8,"",[]],[27,"",[]]]],[4,"19화","전화를 조심해","2016-05-21","",[[18,"",[]],[10,"",[]]]],[4,"20화","천둥의 비밀","2016-05-28","",[[15,"",[]],[27,"",[]],[28,"",[]]]],[4,"21화","무림의 고수 제트렌","2016-06-04","카봇 제트렌 첫 등장.",[[29,"",[]],[1,"",[]],[6,"",[]]]],[4,"22화","야구왕 차탄","2016-06-11","",[[15,"",[]],[27,"",[]],[29,"",[]]]],[4,"23화","전설의 킹가이즈","2016-06-18","카봇 킹가이즈 첫 등장.",[[30,"",[]]]],[4,"24화","호수에서 생긴 일","2016-06-25","",[[17,"",[]],[30,"",[]]]],[4,"25화","나쁜 글을 쓰지 마!","2016-07-02","옥토봇 첫 등장",[[16,"",[]],[30,"",[]]]],[4,"26화","조각공원에서 생긴 일","2016-07-09","3기 최종회 · 본 마지막 등장",[[29,"",[]],[1,"",[]],[2,"",[]],[4,"",[]],[3,"",[]],[0,"",[]],[7,"",[]],[17,"",[]],[18,"",[]],[6,"",[]],[15,"",[]],[16,"",[]],[11,"",[]],[27,"",[]],[28,"",[]]]],[5,"1화","터널에서 생긴일","2016-07-16","카봇 골드렉스의 레스큐 버전 첫 등장 · 현대자동차 카봇들의 구 디자인 마지막 등장(현대차 라이센스 적용 기준)",[[1,"",["특수차"]],[6,"",[]],[17,"",[]],[28,"",["특수차"]]]],[5,"2화","엄마를 찾아줘","2016-07-23","",[[28,"",[]],[15,"",[]],[27,"",[]]]],[5,"3화","요리사 K캅스","2016-07-30","카봇 트루의 폴리스 모드 첫 시전",[[18,"",[]],[15,"",["특수차"]]]],[5,"4화","고래를 부탁해","2016-08-20","",[[30,"",[]],[27,"",[]]]],[5,"5화","토성탐사로봇 토탐","2016-08-27","",[[30,"",[]],[15,"",[]]]],[5,"6화","꿈속에서 생긴일","2016-09-10","",[[30,"",[]],[29,"",[]]]],[5,"7화","깔깔 바이러스","2016-09-24","",[[29,"",[]],[28,"",[]]]],[5,"8화","퀴즈 대회에서 생긴일","2016-10-01","",[[12,"",[]],[14,"",[]],[13,"",[]],[4,"",["화상출연"]],[9,"",["화상출연"]],[11,"",[]]]],[5,"9화","엄마의 노트북","2016-10-08","",[[12,"",[]],[14,"",[]],[13,"",[]],[29,"",[]],[11,"",[]]]],[5,"10화","장난감 박물관에서 생긴 일","2016-10-15","",[[18,"",[]],[27,"",[]]]],[5,"11화","차탄네 박 열렸네!","2016-10-22","합체 배경 변경",[[17,"",[]],[28,"",["특수차"]],[29,"",[]]]],[5,"12화","아가야 조금만 기다려","2016-10-29","",[[17,"",[]],[28,"",[]]]],[5,"13화","쿼카 오던 날","2016-11-05","",[[18,"",[]],[15,"",["특수차"]],[30,"",[]]]],[5,"14화","난 우리 아빠를 믿어!","2016-11-12","",[[18,"",[]],[29,"",[]],[15,"",["특수차"]]]],[5,"15화","우가바가 달라졌어요","2016-11-19","카봇 우가바의 캡틴 버전, Q라인 첫 등장",[[27,"",["특수차"]],[12,"",[]],[14,"",[]],[13,"",[]],[11,"",[]]]],[5,"16화","Q라인의 등장","2016-11-26","카봇 패트론, 카봇 스키드 첫 등장",[[32,"",[]],[27,"",["화상출연"]],[34,"",[]],[35,"",[]]]],[5,"17화","진품명품 대소동","2016-12-03","",[[32,"",[]]]],[5,"18화","촬영장에서 생긴 일","2016-12-10","카봇 다이어, 카봇 리프 첫 등장",[[33,"",[]],[36,"",[]],[37,"",[]]]],[5,"19화","몬스터를 잡아라","2016-12-17","카봇 패트론S 첫 합체",[[32,"",[]]]],[5,"20화","연어를 도와줘","2016-12-23","",[[33,"",[]],[27,"",["특수차"]]]],[5,"21화","거미가 줄을 타고 내려옵니다","2016-12-31","카봇 슈퍼패트론 첫 합체",[[31,"",[]],[29,"",[]]]],[5,"22화","드론 샌드위치","2017-01-07","카봇 다이어EX 첫 합체 · 헬로카봇 본편 통산 100화",[[33,"",[]]]],[5,"23화","신기한 보드게임","2017-01-14","",[[31,"",[]]]],[5,"24화","물놀이를 하고 싶어","2017-01-21","",[[31,"",[]]]],[5,"25화","위기의 모노레일","2017-02-04","펭토킹 마지막 등장",[[31,"",[]]]],[5,"26화","사랑의 무지개","2017-02-11","4기 최종회",[[31,"",[]]]],[6,"1화","농사는 힘들어","2017-02-18","카봇 프라우드제트 첫 등장 · 카봇 미니모드 첫 시전 · 큐브시계 업그레이드",[[42,"",[]],[29,"",[]],[9,"",["음성출연"]]]],[6,"2화","택배상자를 찾아줘","2017-03-04","카봇 엔딩곡 변경",[[42,"",[]],[28,"",["특수차"]]]],[6,"3화","뽕뽕뽕 방귀가 나와요","2017-03-18","카봇 스타블래스터 첫 등장",[[43,"",[]],[15,"",["특수차"]]]],[6,"4화","옥수수를 찾아줘","2017-03-25","",[[43,"",[]]]],[6,"5화","고양이를 부탁해","2017-04-01","",[[42,"",[]],[43,"",[]]]],[6,"6화","요리를 부탁해","2017-04-08","카봇 빌디언 첫 합체",[[39,"",[]]]],[6,"7화","얼음산이 생겼어요","2017-04-15","",[[39,"",[]],[28,"",["특수차"]]]],[6,"8화","대청소하는 날","2017-04-22","",[[39,"",[]]]],[6,"9화","램프의 요정 제스티","2017-04-29","",[[39,"",[]]]],[6,"10화","낚시왕 크랜","2017-05-06","카봇 크랜 첫 등장",[[42,"",[]],[41,"",[]]]],[6,"11화","등산대회에서 생긴 일","2017-05-13","5기 내에선 처음으로 5기 카봇 미등장",[[31,"",[]]]],[6,"12화","모래성을 쌓아줘","2017-05-20","카봇 듀크 첫 등장",[[43,"",[]],[40,"",[]]]],[6,"13화","광산에서 생긴 일","2017-05-27","",[[39,"",[]],[40,"",[]]]],[6,"14화","전통놀이 올림픽","2017-06-03","",[[42,"",[]],[43,"",[]],[40,"",[]],[41,"",[]]]],[6,"15화","밤 따는 날 생긴 일","2017-06-10","카봇 비트런 첫 등장",[[56,"",[]],[29,"",[]]]],[6,"16화","백구를 구해줘","2017-06-17","카봇 메가볼드 첫 등장",[[56,"",[]],[15,"",[]],[57,"",[]]]],[6,"17화","크레인을 구해줘","2017-06-24","카봇 하이퍼빌디언 첫 합체",[[38,"",[]]]],[6,"18화","배탈을 막아줘","2017-07-01","슈퍼 패트론 마지막 등장",[[56,"",[]],[31,"",[]]]],[6,"19화","여우집을 부탁해","2017-07-08","",[[38,"",[]]]],[6,"20화","스키장에서 생긴 일","2017-07-15","",[[38,"",[]]]],[6,"21화","다리가 필요해","2017-07-22","",[[38,"",[]]]],[6,"22화","차탄이 바뀌었어요","2017-07-29","",[[56,"",[]],[57,"",[]],[9,"",["음성출연"]]]],[6,"23화","꼬마 말레이 곰과 친구들","2017-08-05","5기 카봇이 나오지 않은 에피소드 2",[[30,"",[]],[15,"",[]],[27,"",[]]]],[6,"24화","살을 빼고 싶어요","2017-08-12","에반 프라임 첫 등장",[[51,"",[]],[15,"",[]],[9,"",["음성출연"]]]],[6,"25화","아무것도 하기 싫어요.","2017-08-19","드라고닉스 첫 등장",[[51,"",[]],[52,"",[]],[9,"",["음성출연"]]]],[6,"26화","강시가 나타났어요","2017-08-26","",[[51,"",[]],[52,"",[]],[27,"",[]]]],[6,"27화","코끼리를 구해줘","","카봇 킹다이저 첫 등장",[[30,"",[]],[49,"",[]],[17,"",[]]]],[6,"28화","엄마를 지켜줘","","카봇 아머포스 첫 등장 · 다이어, 크랜, 블래스터 마지막 등장",[[49,"",[]],[50,"",[]],[56,"",[]],[57,"",[]],[44,"",[]],[45,"",[]],[46,"",[]],[47,"",[]],[41,"",[]],[40,"",[]],[36,"",[]]]],[6,"29화","거대한 잠자리","","",[[49,"",[]],[50,"",[]]]],[6,"30화","드론 대회에서 생긴 일","","메타팔콘 첫 등장",[[52,"",[]],[53,"",[]]]],[6,"31화","피라미드를 찾아줘","","카봇 아머다이저 첫 합체 · 비트런 마지막 등장",[[56,"",[]],[48,"",[]]]],[6,"32화","물에 빠진 할머니 집","","",[[52,"",[]],[53,"",[]],[51,"",[]]]],[6,"33화","날씨 좀 말려줘","","",[[48,"",[]]]],[6,"34화","행운의 클로버","","카봇 오토소닉 첫 등장",[[57,"",[]],[58,"",[]]]],[6,"35화","찌릿찌릿 E라인","","E라인 첫 등장",[[48,"",[]],[58,"",[]]]],[6,"36화","수박이 맛있어","","",[[48,"",[]]]],[6,"37화","사랑의 구둣방","","",[[51,"",[]],[52,"",[]],[53,"",[]]]],[6,"38화","엄마네 민박","","",[[51,"",[]],[52,"",[]],[53,"",[]]]],[6,"39화","뒷산을 부탁해","","",[[51,"",[]],[52,"",[]],[53,"",[]],[58,"",[]],[44,"",[]]]],[6,"40화","정전기 소동","","카봇 마하피스 첫 등장",[[58,"",[]],[54,"",[]]]],[6,"41화","숲을 지켜줘","","카봇 브레이로드 첫 등장",[[54,"",[]],[55,"",[]]]],[6,"42화","명탐정 차탄","","",[[55,"",[]],[204,"",[]]]],[6,"43화","짝꿍 바꾸기","2018-01-06","가변합체 카봇(마하피스/브레이로드)들의 전투형태 첫 체인지",[[55,"",[]],[54,"",[]]]],[6,"44화","까마귀의 복수","2018-01-13","",[[52,"",[]],[53,"",[]]]],[6,"45화","머물다 삼각지대","2018-01-20","",[[54,"",[]],[55,"",[]],[57,"",[]]]],[6,"46화","성화를 지켜줘","2018-01-27","",[[54,"",[]],[55,"",[]]]],[6,"47화","은반 위의 요정","2018-02-03","드라고닉스 마지막 등장",[[51,"",[]],[52,"",[]]]],[6,"48화","사막에서 스키와 썰매를 타요","2018-02-24","",[[54,"",[]],[55,"",[]],[42,"",[]]]],[6,"49화","쇼핑몰에서 생긴 일","2018-03-03","메가볼드 마지막 등장",[[58,"",[]],[54,"",[]],[57,"",[]]]],[6,"50화","인터넷이 안돼요","2018-03-10","카봇 아머다이저 마지막 등장",[[48,"",[]]]],[6,"51화","문화재를 지켜줘","2018-03-24","",[[54,"",[]],[55,"",[]]]],[6,"52화","수지의 꿈","2018-03-31","5기 최종화",[[54,"",[]],[55,"",[]]]],[7,"1화","수딥을 도와줘","2017-05-05","",[[17,"",[]],[1,"",["특수차"]],[6,"",[]],[4,"",["특수차"]],[2,"",["특수차"]],[3,"",["특수차"]],[5,"",[]]]],[7,"2화","다이아몬드를 찾아라","2017-05-05","",[[18,"",[]],[15,"",[]]]],[7,"3화","사라진 엘리베이터","2017-05-05","",[[18,"",[]],[27,"",[]]]],[7,"4화","나쁜 공기는 싫어","2017-05-05","",[[9,"",["특수차"]],[8,"",["특수차"]],[10,"",[]],[28,"",["특수차"]]]],[8,"1화","아빠 차를 고쳐줘","2018-04-07","카봇 아이언트&엔지니어 크루 첫 등장",[[58,"",[]],[59,"",[]]]],[8,"2화","인형극을 보여 줘","2018-04-14","",[[59,"",[]]]],[8,"3화","거짓말 과자","2018-04-21","카봇 컨버스터 첫 등장",[[62,"",[]]]],[8,"4화","절약은 힘들어","2018-04-28","",[[59,"",[]],[62,"",[]]]],[8,"5화","강풍 때문에 생긴 일","2018-05-12","",[[59,"",[]],[62,"",[]]]],[8,"6화","배추가 필요해","2018-05-19","카봇 럭키펀치 첫 등장 · 오토소닉 마지막 등장",[[61,"",[]],[58,"",[]]]],[8,"7화","전설의 거인상","2018-05-26","",[[61,"",[]],[62,"",[]]]],[8,"8화","먹깨비를 잡아줘","2018-06-02","럭키펀치 도깨비 첫 합체",[[61,"",[]]]],[8,"9화","날아라 전기비행기","2018-06-09","",[[59,"",[]],[62,"",[]]]],[8,"10화","어린이 병원에서 생긴 일","2018-06-16","",[[59,"",[]],[61,"",[]]]],[8,"11화","도깨비를 이겨라","2018-06-23","",[[61,"",[]]]],[8,"12화","스카이랩을 고쳐 줘","2018-06-30","",[[59,"",[]]]],[8,"13화","구조카봇 아이누크","2018-07-07","카봇 아이누크&레스큐 크루 첫 등장",[[59,"",[]],[60,"",[]]]],[8,"14화","우박을 막아줘","2018-07-14","카봇 스타피너 첫 등장",[[60,"",[]],[63,"",[]]]],[8,"15화","남극에서 온 손님","2018-07-21","엉토킹 첫 등장 · 6기에서 유일하게 6기 카봇 미등장 · 5기 유니티 카봇 마지막 등장",[[51,"",[]],[53,"",[]]]],[8,"16화","모델이 된 엄마","2018-07-28","",[[61,"",[]],[62,"",[]]]],[8,"17화","아기사슴을 구해줘","2018-08-04","",[[59,"",[]],[60,"",[]]]],[8,"18화","신호등을 찾아줘","2018-08-11","",[[63,"",[]],[62,"",[]]]],[8,"19화","화물선이 위험해","2018-08-18","",[[59,"",[]],[60,"",[]]]],[8,"20화","유령 비행기","2018-08-25","",[[59,"",[]],[63,"",[]]]],[8,"21화","윷놀이 전쟁","2018-09-01","윷거북 첫 등장",[[59,"",[]]]],[8,"22화","지구를 지키는 카봇","2018-09-08","카봇들이 배신한 2번째 에피소드",[[62,"",[]],[60,"",[]],[63,"",[]]]],[8,"23화","북극에서 생긴 일","2018-09-15","",[[60,"",[]],[63,"",[]]]],[8,"24화","카봇 크루 최고","2018-09-22","",[[59,"",[]],[60,"",[]]]],[8,"25화","수송기 돌핀을 구해줘","2018-10-06","브레이피스 마지막 등장",[[63,"",[]],[54,"",[]],[55,"",[]]]],[8,"26화","괴도 팡팡을 잡아줘","2018-10-13","6기 최종화",[[62,"",[]],[63,"",[]]]],[9,"영화","극장판 헬로카봇: 백악기 시대","2018-08-01","",[[30,"",[]],[49,"",[]],[18,"",[]],[29,"",[]],[191,"",[]],[192,"",[]],[193,"",[]],[194,"",[]],[9,"",["음성출연"]],[0,"",[]]]],[10,"1화","알 카봇을 찾아줘 1","2018-08-03","티라쿵, 프테라쿵 첫 등장",[[163,"",[]],[215,"",[]],[28,"",[]],[15,"",[]],[216,"",[]],[217,"",[]]]],[10,"2화","알 카봇을 찾아줘 2","2018-08-10","브라키쿵, 트리쿵 첫 등장",[[163,"",[]],[215,"",[]],[28,"",[]],[15,"",[]],[216,"",[]],[217,"",[]]]],[10,"3화","해적을 막아줘","2018-08-17","",[[163,"",[]],[215,"",[]],[216,"",[]],[217,"",[]],[27,"",[]]]],[10,"4화","착한 일을 하고 싶어","2018-08-24","모스쿵, 스밀로쿵 첫 등장",[[218,"",[]],[205,"",[]]]],[10,"5화","바둑이의 라이벌","2018-08-31","",[[218,"",[]],[205,"",[]]]],[10,"6화","큐피드 화살","2018-09-07","",[[218,"",[]],[205,"",[]],[217,"",[]],[216,"",[]]]],[10,"7화","멋지게 날고싶어","2018-09-14","",[[218,"",[]],[215,"",[]]]],[10,"8화","윷거북을 찾아줘","2018-09-21","",[[216,"",[]],[218,"",[]],[59,"",[]]]],[10,"9화","여기에 주차하면 안돼요","2018-09-28","마하로드 마지막 등장",[[215,"",[]],[216,"",[]],[217,"",[]],[219,"",[]]]],[10,"10화","공룡 박람회에서 생긴 일","2018-10-05","",[[163,"",[]],[217,"",[]],[28,"",[]]]],[10,"11화","냄새가 고약해요","2018-10-12","",[[216,"",[]],[218,"",[]],[215,"",[]],[217,"",[]],[59,"",[]]]],[10,"12화","자전거는 재미있어","2018-10-19","아이언트 마지막 등장",[[163,"",[]],[215,"",[]],[205,"",[]],[59,"",[]]]],[10,"13화","롤러맨을 잡아줘","2018-10-26","",[[163,"",[]],[215,"",[]],[217,"",[]],[205,"",[]],[18,"",[]]]],[10,"14화","그림을 그려요","2018-11-02","",[[217,"",[]],[218,"",[]],[205,"",[]],[28,"",[]]]],[10,"15화","아이들아 돌아와","2018-11-09","브라키쿵 마지막 등장",[[163,"",[]],[215,"",[]],[218,"",[]],[205,"",[]],[217,"",[]]]],[10,"16화","숨바꼭질하다 생긴일","2018-11-16","피노쿵, 스테쿵 첫 등장",[[163,"",[]],[218,"",[]],[207,"",[]],[206,"",[]]]],[10,"17화","알 카봇 vs 레스큐크루","2018-11-23","프테라쿵 마지막 등장",[[163,"",[]],[215,"",[]],[205,"",[]],[206,"",[]],[60,"",[]]]],[10,"18화","동물들을 구해줘","2018-11-30","구미호 마지막 등장",[[205,"",[]],[206,"",[]],[207,"",[]],[60,"",[]]]],[10,"19화","알 카봇이 사라졌어요","2018-12-07","",[[205,"",[]],[206,"",[]],[207,"",[]],[18,"",[]]]],[10,"20화","인어공주를 구해줘","2018-12-14","플레쿵, 모사쿵 첫 등장",[[220,"",[]],[221,"",[]],[27,"",[]]]],[10,"21화","동굴 속의 외침","2018-12-21","",[[220,"",[]],[221,"",[]],[15,"",[]],[17,"",[]]]],[10,"22화","스타가 될 뻔한 M라인","2018-12-28","",[[205,"",[]],[207,"",[]],[220,"",[]],[221,"",[]]]],[10,"23화","물신령이 수상해","2019-01-04","트리쿵 마지막 등장",[[220,"",[]],[221,"",[]],[216,"",[]],[218,"",[]]]],[10,"24화","소금을 만드는 맷돌","2019-01-11","플레쿵, 모사쿵, 프라우드, 제스티, 스타비, 듀크 마지막 등장",[[220,"",[]],[221,"",[]],[17,"",[]],[44,"",[]],[45,"",[]],[47,"",[]],[40,"",[]]]],[10,"25화","안내견이 된 스밀로쿵","2019-01-18","",[[205,"",[]],[206,"",[]],[207,"",[]],[15,"",[]]]],[10,"26화","강아지 호텔","2019-01-25","쿵 최종화 · 모스쿵 마지막 등장",[[218,"",[]],[207,"",[]],[206,"",[]]]],[11,"1화","황금잉어를 지켜줘","2019-01-27","",[[63,"",[]],[60,"",[]]]],[11,"2화","닭둘기의 공격","2019-02-03","럭키펀치 마지막 등장",[[61,"",[]]]],[11,"3화","산양을 구해줘","2019-02-10","컨버스터 마지막 등장",[[62,"",[]],[60,"",[]]]],[11,"4화","카봇 동물구조대","2019-02-17","스타피너, 아이누크 마지막 등장",[[63,"",[]],[60,"",[]]]],[12,"영화","극장판 헬로카봇: 옴파로스 섬의 비밀","2019-01-31","",[[199,"",[]],[195,"",[]],[197,"",[]],[196,"",[]],[198,"",[]],[200,"",[]],[201,"",[]],[15,"",["잠깐"]],[17,"",[]],[7,"",[]]]],[13,"1화","점쟁이 문어 파울","2019-02-24","랩터쿵, 안킬로쿵, 아르케쿵 첫 등장",[[79,"",[]],[80,"",[]],[81,"",[]]]],[13,"2화","레옹 버섯을 찾아줘","2019-03-03","",[[79,"",[]],[80,"",[]]]],[13,"3화","포경선을 막아라","2019-03-10","프테라드롭쿵 첫 등장",[[79,"",[]],[80,"",[]],[81,"",[]],[78,"",[]]]],[13,"4화","달려라 터보","2019-03-17","",[[79,"",[]],[80,"",[]],[81,"",[]],[78,"",[]]]],[13,"5화","짝짓기를 도와줘","2019-03-24","",[[79,"",[]],[80,"",[]],[81,"",[]]]],[13,"6화","산호를 지켜줘","2019-03-31","",[[79,"",[]],[80,"",[]],[81,"",[]],[78,"",[]],[15,"",[]]]],[14,"1화","스피너를 찾아라","2019-04-10","카봇 스피너블 첫 등장 · 인트로 BGM 변경",[[82,"",[]]]],[14,"2화","스피너블의 친구 버디가드","2019-04-17","카봇 버디가드, 블랙 위저드 첫 등장",[[82,"",[]],[83,"",[]]]],[14,"3화","다섯 개의 스피너","2019-04-24","",[[82,"",[]],[83,"",[]]]],[14,"4화","경호원이 필요해","2019-05-01","테로 프라임, 피닉스 프라임 첫 등장 · 정대기 기자 마지막 등장.",[[71,"",[]],[70,"",[]]]],[14,"5화","엄마는 바리스타","2019-05-05","",[[71,"",[]],[70,"",[]]]],[14,"6화","아빠가 된 바둑이","2019-05-12","7기에서 처음으로 해당 시즌 카봇 미등장",[[78,"",[]],[79,"",[]],[80,"",[]],[81,"",[]]]],[14,"7화","해파리의 습격","2019-05-19","이지은 기자 첫 등장",[[71,"",[]],[70,"",[]]]],[14,"8화","유령의 집","2019-05-26","무간 프라임, 미리내 프라임 첫 등장",[[72,"",[]],[73,"",[]]]],[14,"9화","엘리베이터에서 생긴 일","2019-06-02","피닉스 프라임 마지막 등장",[[71,"",[]],[70,"",[]]]],[14,"10화","전설의 마술피리","2019-06-09","무간 프라임 마지막 등장",[[72,"",[]],[73,"",[]]]],[14,"11화","비행기가 추락했어요","2019-06-16","카봇 메디언트&앰뷸런스 크루 첫 등장",[[82,"",[]],[83,"",[]],[64,"",[]]]],[14,"12화","용감한 기자","2019-06-23","카봇 파이언트&119 크루 첫 등장 · 미리내 프라임 마지막 등장",[[72,"",[]],[65,"",[]]]],[14,"13화","바둑이의 새 친구","2019-06-30","코리리 첫 등장 · 랩터쿵, 안킬로쿵, 아르케쿵 마지막 등장",[[78,"",[]],[79,"",[]],[80,"",[]],[81,"",[]]]],[14,"14화","블랙홀이 나타났어요","2019-07-07","카이온 프라임, 베노사 프라임 첫 등장",[[75,"",[]],[74,"",[]]]],[14,"15화","꿀시구를 먹고 싶어","2019-07-14","",[[75,"",[]],[74,"",[]]]],[14,"16화","연못을 구해줘","2019-07-21","",[[64,"",[]],[82,"",[]]]],[14,"17화","나무를 살려줘","2019-08-04","",[[64,"",[]],[82,"",[]]]],[14,"18화","용감한 기자 2","2019-08-11","헬로카봇 본편 통산 200화",[[65,"",[]],[64,"",[]]]],[14,"19화","발명대회에서 생긴 일","2019-08-18","가고토스 프라임, 독꼬리 프라임 첫 등장",[[77,"",[]],[76,"",[]]]],[14,"20화","방화범을 잡아줘","2019-08-25","",[[77,"",[]],[76,"",[]],[65,"",[]]]],[14,"21화","실험실 동물을 구해줘","2019-09-01","",[[75,"",[]],[74,"",[]]]],[14,"22화","분수의 전설","2019-09-08","",[[65,"",[]]]],[14,"23화","앵무새의 증언","2019-09-15","카이온 프라임, 베노사 프라임 마지막 등장",[[75,"",[]],[74,"",[]]]],[14,"24화","도로 위의 피카소","2019-09-22","",[[65,"",[]],[64,"",[]]]],[14,"25화","액체괴물이 무서워","2019-09-29","카봇 유니크루저&파일럿 크루 첫 등장 · 테로 프라임 마지막 등장",[[68,"",[]],[70,"",[]]]],[14,"26화","도깨비 감투","2019-10-06","",[[68,"",[]]]],[14,"27화","보이스피싱을 막아줘","2019-10-13","스피너블, 버디가드 마지막 등장",[[82,"",[]],[83,"",[]]]],[14,"28화","음치는 괴로워","2019-10-20","프테라드롭쿵 마지막 등장",[[68,"",[]],[78,"",[]]]],[14,"29화","파이언트와 메디언트의 멋진 휴가","2019-10-27","",[[65,"",[]],[64,"",[]]]],[14,"30화","도둑맞은 집","2019-11-03","7기 유니티 카봇 마지막 등장",[[77,"",[]],[76,"",[]]]],[14,"31화","등대에서 생긴 일","2019-11-10","카봇 제트크루저&크루 에어 첫 등장",[[69,"",[]]]],[14,"32화","탱크를 막아줘","2019-11-17","카봇 라이캅스&크루 기동대 첫 등장",[[69,"",[]],[66,"",[]]]],[14,"33화","황금 가면을 찾아줘","2019-11-24","",[[69,"",[]],[66,"",[]]]],[14,"34화","쓰레기를 버리지 마세요","2019-12-01","카봇 앵그리퍼프&크루 워커 첫 등장",[[67,"",[]]]],[14,"35화","대통령이 된 차탄","2019-12-08","메디언트 마지막 등장",[[64,"",[]],[66,"",[]],[67,"",[]],[68,"",[]],[69,"",[]],[28,"",[]]]],[14,"36화","뻥튀기 대작전","2019-12-15","",[[67,"",[]]]],[14,"37화","백살공주와 일곱 난쟁이","2019-12-22","",[[66,"",[]],[67,"",[]]]],[14,"38화","장군아 모나야 울지마","2019-12-29","7기 최종화",[[66,"",[]],[69,"",[]]]],[15,"1화","우리들은 한 가족","2019-04-22","",[[82,"",[]],[83,"",[]]]],[15,"2화","카네이션을 찾아줘","2019-04-29","스밀로쿵, 스테쿵, 피노쿵 마지막 등장",[[78,"",[]],[79,"",[]],[80,"",[]],[81,"",[]],[205,"",[]],[206,"",[]],[207,"",[]]]],[15,"3화","고양이 엄마","2019-05-06","",[[82,"",[]],[83,"",[]]]],[15,"4화","부부싸움은 못말려","2019-05-13","헬로 스피너블 최종화",[[78,"",[]],[79,"",[]],[80,"",[]],[81,"",[]]]],[16,"영화","극장판 헬로카봇: 달나라를 구해줘!","2019-09-04","",[[84,"",[]],[85,"",[]],[68,"",[]],[64,"",[]],[65,"",[]]]],[17,"1화","최고의 생일 선물","2020-01-05","큐브시계가 한층 더 업그레이드",[[69,"",[]],[67,"",[]]]],[17,"2화","몸이 붕붕 떠요","2020-01-12","그리핑크스 프라임, 디스크 캐논 프라임, P라인 첫 등장",[[86,"",[]],[87,"",[]]]],[17,"3화","바둑아! 원반을 잡아","2020-01-19","",[[86,"",[]],[87,"",[]]]],[17,"4화","T라인이 빨라졌어요","2020-01-26","이구아드롭쿵과 아르시노쿵, 파라사쿵, 디메트로쿵 첫 등장",[[88,"",[]],[89,"",[]],[90,"",[]],[91,"",[]]]],[17,"5화","겨울 만들기","2020-02-02","카봇과 라인 일가가 잠시 휴전한 에피소드 1",[[66,"",[]],[69,"",[]]]],[17,"6화","유령을 도와줘","2020-02-09","",[[88,"",[]],[89,"",[]],[90,"",[]],[91,"",[]]]],[17,"7화","잃어버린 여의주를 찾아서","2020-02-16","용룡이 첫 등장",[[88,"",[]],[89,"",[]],[90,"",[]],[91,"",[]]]],[17,"8화","못말리는 알 카봇 삼총사","2020-02-23","딜로포쿵, 파키케쿵 첫 등장",[[93,"",[]],[92,"",[]],[89,"",[]]]],[17,"9화","엄마의 트럭배달","2020-03-01","고람 빅쿵, 브론테로 빅쿵 첫 등장",[[94,"",[]],[95,"",[]],[28,"",[]]]],[17,"10화","충치를 막아줘","2020-03-08","이구아드롭쿵, 아르시노쿵, 파라사쿵, 디메트로쿵 마지막 등장",[[88,"",[]],[89,"",[]],[90,"",[]],[91,"",[]]]],[17,"11화","오래된 편지가 왔어요","2020-03-15","",[[93,"",[]],[92,"",[]],[95,"",[]]]],[17,"12화","유리창을 닦아요","2020-03-22","",[[94,"",[]],[93,"",[]],[92,"",[]]]],[17,"13화","S라인의 소개팅","2020-03-29","딜로포쿵, 파키케쿵 마지막 등장",[[94,"",[]],[93,"",[]],[92,"",[]]]],[17,"14화","바다코끼리를 구해줘","2020-04-05","디스크 캐논 프라임, 그리핑크스 프라임 마지막 등장",[[86,"",[]],[87,"",[]]]],[17,"15화","선생님의 결혼식","2020-04-12","카봇 테크노마스터 첫 등장",[[66,"",[]],[96,"",[]]]],[17,"16화","바다에서 사라진 소녀","2020-04-19","",[[68,"",[]],[69,"",[]]]],[17,"17화","이상한 자판기","2020-04-26","",[[96,"",[]],[69,"",[]]]],[17,"18홰","별사탕을 찾아줘","2020-05-03","",[[96,"",[]],[68,"",[]]]],[17,"19화","택배배달은 힘들어","2020-05-10","",[[96,"",[]],[69,"",[]]]],[17,"20화","세차로봇을 막아줘","2020-05-17","",[[96,"",[]],[66,"",[]]]],[17,"21화","용룡아 비를 부탁해","2020-05-24","파이언트 마지막 등장",[[96,"",[]],[66,"",[]],[65,"",[]],[11,"",["화상출연"]]]],[17,"22화","폭주족이 달라졌어요","2020-05-31","트루 마지막 등장",[[94,"",[]],[95,"브론테로 쿵",[]],[15,"",["특수차"]]]],[17,"23화","알까고를 이겨라","2020-06-07","",[[68,"",[]],[69,"",[]]]],[17,"24화","간이역 박물관","2020-06-14","고람 빅쿵 마지막 등장",[[96,"",[]],[94,"",[]]]],[17,"25화","황금알을 낳는 타조","2020-06-21","앵그리퍼프 마지막 등장",[[96,"",[]],[67,"",[]]]],[17,"26화","어린이 보호구역을 지켜줘","2020-06-28","시즌8 최종화 · 브론테로 빅쿵 마지막 등장",[[66,"",[]],[95,"",[]]]],[18,"1화","다시 만난 친구","2020-07-05","X 카봇 형태 첫 등장 · 카봇 에이스의 X 카봇 형태 업그레이드",[[1,"",["X"]]]],[18,"2화","블랙박스를 찾아줘","2020-07-12","",[[1,"",["X"]]]],[18,"3화","세상에서 제일 작은 화산","2020-07-19","",[[1,"",["X"]],[69,"",[]]]],[18,"4화","아빠는 멋쟁이","2020-07-26","카봇 프론의 X 카봇 형태 업그레이드",[[2,"",["X"]]]],[18,"5화","S라인이 착해졌어요","2020-08-02","",[[1,"",["X"]],[2,"",["X"]]]],[18,"6화","날아라 삐약이 1호","2020-08-09","우주로 박사 첫 등장",[[1,"",["X"]],[2,"",["X"]]]],[18,"7화","하늘 돋보기","2020-08-16","",[[1,"",["X"]],[2,"",["X"]]]],[18,"8화","유령의 날에 생긴 일","2020-09-06","카봇 댄디, 카봇 스카이의 X 카봇 형태 업그레이드 · 그래픽 디자인 변경",[[4,"",["X"]],[3,"",["X"]]]],[18,"9화","날다람쥐 도둑단","2020-09-13","",[[4,"",["X"]],[3,"",["X"]]]],[18,"10화","땅 속이 수상해","2020-09-27","카봇 파워크루저&크루 파워 첫 등장",[[103,"",[]]]],[18,"11화","돌아온 펜타스톰 X 1","2020-10-04","카봇 스톰의 X 카봇 형태 업그레이드 · 펜타스톰 X 첫 합체 · 달려라 바니, 위대한 토끼발 본편 첫 등장 · 합체 배경 변경",[[1,"",["X"]],[2,"",["X"]],[4,"",["X"]],[3,"",["X"]],[5,"",["X"]],[0,"",["X"]]]],[18,"12화","돌아온 펜타스톰 X 2","2020-10-11","",[[1,"",["X"]],[2,"",["X"]],[4,"",["X"]],[3,"",["X"]],[5,"",["X"]],[0,"",["X"]]]],[18,"13화","세상이 기울어졌어요","2020-10-18","",[[66,"",[]],[96,"",[]],[103,"",[]]]],[18,"14화","빙산을 막아줘","2020-10-25","스톰의 본격적인 첫 단독활동",[[0,"",["X"]],[103,"",[]],[5,"",["X"]]]],[18,"15화","휴대폰을 찾아줘","2020-11-01","스톰 합체하지않고 해결한 에피소드",[[5,"",["X"]],[3,"",["X"]]]],[18,"16화","라인 남매의 집짓기","2020-11-08","카봇 모:반 첫 등장",[[97,"",[]],[103,"",[]]]],[18,"17화","모나의 첫 사랑","2020-11-15","",[[1,"",["X"]],[4,"",["X"]]]],[18,"18화","합체! 라인 로봇","2020-11-22","다라봉 첫 합체",[[5,"",["X"]],[4,"",["X"]],[2,"",["X"]],[0,"",["X"]]]],[18,"19화","국수왕 선발대회","2020-11-29","",[[97,"",[]],[103,"",[]]]],[18,"20화","목도리도마뱀을 구해줘","2020-12-06","카봇 울티맥스 첫 등장",[[100,"",[]]]],[18,"21홰","정글에서 생긴 일","2020-12-13","",[[100,"",[]],[66,"",[]]]],[18,"22화","징징벨을 막아줘","2020-12-20","세라봉 첫 합체",[[5,"",["X"]],[4,"",["X"]],[2,"",["X"]],[0,"",["X"]]]],[18,"23화","벌통을 지켜줘!","2020-12-27","",[[97,"",[]],[100,"",[]]]],[18,"24화","이상한 안개","2021-01-03","테크노마스터 마지막 등장",[[100,"",[]],[97,"",[]],[96,"",[]]]],[18,"25화","주차로봇을 돌려줘!","2021-01-10","",[[4,"",["X"]],[2,"",["X"]],[5,"",["X"]],[0,"",["X"]]]],[18,"26화","가짜를 잡아줘","2021-01-17","9기 최종화 · 모:반 마지막 등장",[[97,"",[]],[100,"",[]]]],[19,"1화","빨간색을 찾아줘","2021-02-03","카봇 잭슈트뱅 첫 등장",[[104,"",[]],[4,"",["X"]]]],[19,"2화","겨울 산장에서 생긴 일","2021-02-10","카봇 페로뱅 첫 등장",[[105,"",[]]]],[19,"3화","배달을 도와줘","2021-02-17","카봇 가디언트 첫 등장",[[111,"",[]]]],[19,"4화","잔디가 위험해","2021-02-24","카봇 썬런뱅 첫 등장",[[107,"",[]]]],[19,"5화","양치기 개 차바둑","2021-03-03","카봇 호스퍼스뱅 첫 등장",[[108,"",[]]]],[19,"6화","추억 도둑","2021-03-10","카봇 자크레인뱅 첫 등장",[[104,"",[]],[110,"",[]]]],[19,"7화","구석기 시대로","2021-03-21","카봇 나노티스뱅 첫 등장",[[108,"",[]],[106,"",[]]]],[19,"8화","고양이 몽실이를 구해줘","2021-03-28","몽실이 첫 등장",[[111,"",[]],[104,"",[]]]],[19,"9화","이순경님 생일 축하해요","2021-04-04","호스퍼스 뱅 마지막 등장",[[105,"",[]],[108,"",[]]]],[19,"10화","악어가 위험해","2021-04-18","카봇 자크 뱅 유일한 등장",[[106,"",[]],[109,"",[]]]],[19,"11화","화장실을 쓰고싶어","2021-04-25","카봇 페이저, 카봇 소닉붐의 첫 등장",[[117,"",[]],[116,"",[]]]],[19,"12화","공포의 쿵쿵소리","2021-05-02","카봇 로더 첫 등장 · 카봇 자이언트 로더 첫 합체",[[112,"",[]],[115,"",[]]]],[19,"13화","지구의 물을 지켜줘(상)","2021-05-09","잭슈트 뱅 마지막 등장",[[104,"",[]],[107,"",[]],[0,"",["X"]]]],[19,"14화","지구의 물을 지켜줘(하)","2021-05-16","페로 뱅, 나노티스 뱅 마지막 등장",[[105,"",[]],[106,"",[]],[0,"",["X"]]]],[19,"15화","울지마 카봇","2021-05-23","",[[111,"",[]],[107,"",[]]]],[19,"16화","급식을 부탁해","2021-05-30","",[[112,"",[]]]],[19,"17화","위성 건강검진을 받아요","2021-06-06","카봇 마이티로 첫 등장",[[118,"",[]]]],[19,"18화","하수도가 위험해","2021-06-13","썬런 뱅 마지막 등장",[[107,"",[]],[0,"",["X"]]]],[19,"19화","날다람쥐 도둑단 2","2021-06-20","자이언트 로더 본편 마지막 등장",[[112,"",[]]]],[19,"20화","황금튤립을 지켜줘","2021-06-27","용룡이 마지막 등장",[[111,"",[]],[118,"",[]]]],[19,"21화","코리리가 사라졌어요","2021-07-04","",[[110,"",[]],[118,"",[]]]],[19,"22화","황금특공대의 탄생","2021-07-11","황금특공대 형태 첫 등장 · 유니크루저 황금특공대 각성 · 자크레인 뱅 마지막 등장",[[68,"",["황금특공대"]],[110,"",[]]]],[19,"23화","보물선을 지켜줘","2021-07-18","제트크루저 황금특공대 각성, 10기에서 10기카봇 미등장.",[[66,"",[]],[69,"",["황금특공대"]]]],[19,"24화","금 나와라 뚝딱","2021-07-25","파워크루저 황금특공대 각성",[[111,"",[]],[103,"",["황금특공대"]]]],[19,"25화","황금사슴을 지켜줘","2021-08-01","제트렌 황금특공대 각성 · 라이캅스 마지막 등장, 10기에서 10기 카봇 미등장",[[29,"",["황금특공대"]],[66,"",[]]]],[19,"26화","박이 사라졌어요","2021-08-15","10기 최종화 · 펜타스톰 황금특공대 각성 · 마이티로 마지막 등장",[[118,"",[]],[0,"",["황금특공대"]]]],[20,"1화","걱정, 안녕! 쌈바","2021-08-29","카봇 저스포스 첫 등장",[[119,"",[]]]],[20,"2화","운하가 막혔어요","2021-09-05","카봇 레드와일러 첫 등장 · 헬로카봇 본편 통산 300화",[[119,"",[]],[120,"",[]]]],[20,"3화","진짜와 가짜의 삼바 대결","2021-09-12","",[[119,"",[]],[120,"",[]]]],[20,"4화","악당 학원","2021-09-19","유니크루저 마지막 등장",[[68,"",["황금특공대"]]]],[20,"5화","도깨비 공책","2021-09-26","제트크루저, 파워크루저 마지막 등장",[[69,"",["황금특공대"]],[103,"",["황금특공대"]]]],[20,"6화","새들을 구해줘","2021-10-03","카봇 나이트호퍼, 카봇 맥스도저 첫 등장",[[121,"",[]],[122,"",[]]]],[20,"7화","결혼기념일에 생긴 일","2021-10-10","",[[121,"",[]],[122,"",[]]]],[20,"8화","전설의 불닭","2021-10-17","",[[120,"",[]],[121,"",[]]]],[20,"9화","이기자님 힘내세요","2021-10-24","카봇 맥스도저 마지막 등장",[[119,"",[]],[122,"",[]]]],[20,"10화","치료견이 된 차바둑","2021-10-31","로제 및 가면단 조직의 첫 등장",[[120,"",[]],[29,"",["황금특공대"]]]],[20,"11화","희토류를 지켜줘","2021-11-07","카봇 베어하이더, 카봇 이글하이더 첫 등장",[[128,"",[]],[129,"",[]]]],[20,"스페셜 1","쌈바 베스트","2021-11-14","",[[119,"",[]],[120,"",[]],[121,"",[]],[122,"",[]]]],[20,"스페셜 2","황금특공대 베스트","2021-11-21","",[[66,"",[]],[118,"",[]],[68,"",["황금특공대"]],[69,"",["황금특공대"]],[103,"",["황금특공대"]],[29,"",["황금특공대"]],[0,"",["황금특공대"]]]],[20,"12화","아빠의 아픈 과거","2021-11-28","",[[29,"",["황금특공대"]],[0,"",["황금특공대"]]]],[20,"13화","얌체주문을 막아줘","2021-12-05","",[[128,"",[]],[129,"",[]]]],[20,"14화","사라진 안테나를 찾아서","2021-12-12","이글하이더 마지막 등장",[[119,"",[]],[129,"",[]]]],[20,"15화","풍력발전기를 찾아줘","2021-12-19","카봇 킹가이더 첫 등장",[[125,"",[]]]],[20,"16화","갯벌에서 생긴 일 1","2021-12-26","카봇 킹가이더 첫 합체",[[125,"",[]]]],[20,"17화","갯벌에서 생긴 일 2","2022-01-02","",[[125,"",[]]]],[20,"18화","북극이 이상해요","2022-01-09","카봇 샌드버스터, 카봇 록캔 첫 등장",[[123,"",[]],[124,"",[]]]],[20,"19화","물소와 코뿔소의 전쟁","2022-01-16","",[[120,"",[]],[124,"",[]],[123,"",[]]]],[20,"20화","만능 리모컨","2022-01-23","",[[125,"",[]]]],[20,"21화","예방주사 맞는 날","2022-01-30","카봇과 라인일가가 휴전한 에피소드 3 · 나이트호퍼, 베어하이더 마지막 등장",[[121,"",[]],[128,"",[]],[120,"",[]]]],[20,"22화","춤추는 신발, 춤신","2022-02-06","",[[119,"",[]],[123,"",[]],[124,"",[]]]],[20,"23화","용왕님을 살려줘","2022-02-13","",[[125,"",[]]]],[20,"24화","홍게를 위한 다리 만들기","2022-02-20","",[[120,"",[]],[124,"",[]],[123,"",[]]]],[20,"25화","경비로봇 대 도둑로봇","2022-02-27","저스포스, 레드와일러 마지막 등장",[[119,"",[]],[120,"",[]]]],[20,"26화","날아라 삐약이 2호","2022-03-06","시즌11 최종화 · 킹가이더 마지막 등장",[[125,"",[]]]],[21,"1화","햇빛을 찾아줘","2022-04-03","카봇 호크의 X 카봇 형태 업그레이드 · 카봇 라란자 첫 등장",[[6,"",["X"]],[144,"",[]]]],[21,"2화","해저 화산이 폭발했어요","2022-04-10","",[[6,"",["X"]],[144,"",[]]]],[21,"3화","곤충을 구해줘","2022-04-17","",[[6,"",["X"]],[144,"",[]]]],[21,"4화","풋살대회에서 생긴 일","2022-04-24","카봇 스크류붐바, 카봇 파워붐바 첫 등장",[[140,"",[]],[141,"",[]]]],[21,"5화","토끼와 거북이의 대결","2022-05-01","",[[140,"",[]],[141,"",[]]]],[21,"6화","라인 일당 표류기","2022-05-08","카봇과 라인 일가가 잠시 휴전한 에피소드 4",[[140,"",[]],[141,"",[]]]],[21,"7화","돌아온 펭귄 딩딩","2022-05-15","",[[6,"",["X"]],[140,"",[]]]],[21,"8화","씨앗은행을 지켜줘","2022-05-22","",[[140,"",[]],[141,"",[]]]],[21,"9화","미래에서 온 경찰 퓨처","2022-05-29","카봇 드로캅, 카봇 이그리붐 첫 등장 · 퓨처 유일한 등장",[[131,"",[]],[132,"",[]]]],[21,"10화","이상한 털이 났어요","2022-06-05","제트렌 마지막 등장",[[131,"",[]],[132,"",[]],[29,"",["황금특공대"]]]],[21,"11화","싫어싫어 향수","2022-06-12","카봇 도저밤밤 첫 등장",[[140,"",[]],[137,"",[]]]],[21,"12화","가짜가 너무 많아요","2022-06-19","",[[131,"",[]],[132,"",[]],[137,"",[]],[97,"",["화상출연"]],[100,"",["화상출연"]]]],[21,"13화","영화배우가 된 바둑이","2022-06-26","카봇 푸르디붐, 카봇 서포티붐 첫 등장",[[133,"",[]],[134,"",[]]]],[21,"14화","웹툰 작가가 되고 싶어","2022-07-03","",[[133,"",[]],[134,"",[]]]],[21,"15화","사막에 나무를 심어요","2022-07-10","카봇 레미밤밤 첫 등장",[[133,"",[]],[134,"",[]],[135,"",[]]]],[21,"16화","젊음의 황금거울을 찾아라","2022-07-17","",[[141,"",[]],[135,"",[]]]],[21,"17화","마을을 지키는 나무","2022-07-24","카봇 아레스밤밤 첫 등장",[[135,"",[]],[137,"",[]],[136,"",[]],[131,"",[]]]],[21,"18화","중력이 무서워","2022-07-31","",[[6,"",["X"]],[144,"",[]],[136,"",[]]]],[21,"19화","열대 숲의 정원사를 구해줘","2022-08-07","라란자, 레미밤밤 마지막 등장",[[6,"",["X"]],[144,"",[]],[136,"",[]],[135,"",[]]]],[21,"20화","선녀를 도와줘","2022-08-14","도저밤밤 마지막 등장",[[140,"",[]],[141,"",[]],[137,"",[]]]],[21,"21화","석유 먹는 박테리아를 막아줘","2022-08-21","카봇 하이퍼캅스 첫 합체",[[130,"",[]]]],[21,"22화","녹스러 박테리아를 막아줘","2022-08-28","",[[130,"",[]]]],[21,"23화","꼬마악마, 꼬블이 왔어요","2022-09-04","지옥 대마왕 첫 등장",[[140,"",[]],[141,"",[]],[136,"",[]]]],[21,"24화","번호판은 카멜레온","2022-09-11","",[[130,"",[]]]],[21,"25화","딱고용을 막아줘","2022-09-18","Q라인 일당 마지막 등장",[[130,"",[]]]],[21,"26화","우주망원경을 찾아줘","2022-09-25","12기 1파트 종료 하이퍼캅스 전설의 탄생",[[130,"",[]]]],[21,"27화","돌고래를 구해줘","2023-01-01","12기 2파트 시작 · 카봇 드릴버스트, 카봇 스톰다이버 첫 등장",[[142,"",[]],[143,"",[]]]],[21,"28화","배터리가 방전됐어요","2023-01-08","",[[142,"",[]],[143,"",[]]]],[21,"29화","꼴찌의 제왕 울랄라","2023-01-15","카봇 포레밤밤 첫 등장",[[142,"",[]],[143,"",[]],[138,"",[]]]],[21,"30화","모래도둑을 잡아줘","2023-01-22","",[[123,"",[]],[136,"",[]],[142,"",[]]]],[21,"31화","산타견이 된 바둑이","2023-01-29","카봇 큐어밤밤 첫 등장",[[124,"",[]],[143,"",[]],[139,"",[]]]],[21,"32화","산미치광이가 나타났어요","2023-02-05","",[[131,"",[]],[139,"",[]],[138,"",[]]]],[21,"33화","에어컨을 찾아줘","2023-02-12","",[[133,"",[]],[134,"",[]]]],[21,"34화","생태통로를 지켜줘","2023-02-19","",[[123,"",[]],[142,"",[]],[139,"",[]]]],[21,"35화","우주 서커스단","2023-02-26","포레밤밤 마지막 등장",[[124,"",[]],[143,"",[]],[138,"",[]]]],[21,"36화","사라진 짐을 찾아줘","2023-03-05","",[[131,"",[]],[133,"",[]],[134,"",[]]]],[21,"37화","삼순이 학교에 오다","2023-03-12","삼순 본편 첫 등장 · 샌드버스터 마지막 등장",[[123,"",[]],[139,"",[]],[136,"",[]]]],[21,"38화","도토리를 찾아줘","2023-03-19","드릴버스트 마지막 등장",[[131,"",[]],[142,"",[]]]],[21,"39화","신기루가 나타났어요","2023-03-26","시즌 12 최종화 · 스톰다이버, 록캔, 아레스밤밤 마지막 등장",[[124,"",[]],[143,"",[]],[136,"",[]]]],[22,"영화","극장판 헬로카봇: 수상한 마술단의 비밀","2022-09-28","",[[202,"",[]],[203,"",[]],[103,"",[]],[0,"",["X"]]]],[23,"1화","지구로 온 메카드볼","2023-04-02","차영웅, 이오, 마보리단 출연",[[141,"",[]],[208,"",[]],[209,"",[]],[210,"",[]]]],[23,"2화","자연이 이상해요","2023-04-09","세라, 빈 라인하트 출연",[[140,"",[]],[211,"",[]],[212,"",[]]]],[23,"3화","화산 속 메카드볼을 지켜줘","2023-04-16","키라얀 출연",[[130,"",[]],[213,"",[]],[210,"",[]]]],[23,"4화","달은 또 하나의 메카드볼","2023-04-23","헬로카봇×메카드볼 최종화 · 이그리붐, 푸르디붐 마지막 등장",[[130,"",[]],[214,"",[]],[209,"",[]],[132,"",[]],[133,"",[]]]],[24,"1화","공포의 펠리컨","2023-04-30","카봇 윙버드젬 첫 등장",[[145,"",[]],[140,"",[]]]],[24,"2화","풍선을 막아줘","2023-05-07","카봇 톡시 젬, 인피니툴과 젬 체인지 첫 등장",[[145,"",[]],[149,"인피니툴 톡시 젬",[]],[148,"",[]]]],[24,"3화","얼음땡 바이러스","2023-05-14","드로캅, 서포티붐 마지막 등장",[[145,"",[]],[131,"",[]],[134,"",[]]]],[24,"4화","코끼리 도둑단","2023-05-21","카봇 디고베어젬, 카봇 스나이퍼 젬 첫 등장",[[147,"",[]],[152,"인피니툴 스나이퍼 젬",[]],[148,"",[]]]],[24,"5화","머리카락을 지켜줘","2023-05-28","카봇 파워붐바 마지막 등장",[[147,"",[]],[141,"",[]]]],[24,"6화","사라진 올빼미","2023-06-04","카봇 스나이퍼 젬 마지막 등장",[[147,"",[]],[152,"인피니툴 스나이퍼 젬",[]],[148,"",[]]]],[24,"7화","강아지 옷 만들기","2023-06-11","카봇 캥복스 젬 첫 등장",[[145,"",[]],[147,"",[]],[150,"인피니툴 캥복스 젬",[]],[148,"",[]]]],[24,"8화","무인 매장에서 생긴 일","2023-06-18","카봇 스크류붐바 마지막 등장",[[147,"",[]],[140,"",[]]]],[24,"9화","눈토끼야 고마워","2023-06-25","카봇 토터젬 첫 등장 · 카봇 큐어밤밤 마지막 등장",[[146,"",[]],[139,"",[]]]],[24,"10화","어린이 동물 탐정단","2023-07-02","카봇 로어 젬 유일한 등장",[[146,"",[]],[151,"인피니툴 로어 젬",[]],[148,"",[]]]],[24,"11화","자동차 캠핑장에서 생긴일","2023-07-16","카봇 사파리세이버 첫 등장",[[153,"",[]]]],[24,"12화","기름이 미끌미끌","2023-07-23","",[[153,"",[]]]],[24,"13화","삼순이와 수지의 모험","2023-07-30","",[[153,"",[]]]],[24,"14화","빠빠와 짱짱이 왔어요","2023-08-06","사파리세이버 1~4화 까지 이어진 에피소드다.",[[153,"",[]]]],[24,"15화","동물 밀매를 막아줘","2023-08-13","카봇 캥복스 젬 마지막 등장",[[147,"",[]],[146,"",[]],[150,"인피니툴 캥복스 젬",[]],[148,"",[]]]],[24,"16화","할머니가 위험해","2023-08-20","모든 인피니툴 마지막 등장",[[145,"",[]],[146,"",[]],[149,"인피니툴 톡시 젬",[]],[148,"",[]]]],[24,"17화","옥상정원 만들기","2023-08-27","카봇 레포스, 크리스탈 카봇 첫 등장",[[159,"",[]],[1,"",["크리스탈","X"]],[3,"",["크리스탈","X"]]]],[24,"18화","깨끗한 물이 필요해","2023-09-03","",[[159,"",[]],[2,"",["크리스탈","X"]],[4,"",["크리스탈","X"]]]],[24,"19화","크리스탈 펜타스톰 X의 탄생","2023-09-10","",[[153,"",[]],[0,"",["크리스탈","X"]],[9,"",["음성출연"]]]],[24,"20화","전기를 먹는 가오리","2023-09-17","카봇 일렉트롬 첫 등장",[[6,"",["크리스탈","X"]],[160,"",[]]]],[24,"21화","탁구 대회에서 생긴 일","2023-09-24","",[[159,"",[]],[160,"",[]]]],[24,"22화","못 말리는 이모의 등장","2023-10-01","",[[145,"",[]],[160,"",[]]]],[24,"23화","컴퓨터를 찾아줘","2023-10-08","13기 내에서 13기 카봇 미등장 · 크리스탈 카봇 형태 마지막 등장",[[1,"",["크리스탈","X"]],[6,"",["크리스탈","X"]],[2,"",["크리스탈","X"]],[3,"",["크리스탈","X"]],[4,"",["크리스탈","X"]],[5,"",["크리스탈","X"]]]],[24,"24화","이상한 색종이","2023-10-15","",[[153,"",[]]]],[24,"25화","동물 때문에 바쁘다 바빠","2023-10-22","",[[153,"",[]]]],[24,"26화","우리랜드를 지켜줘","2023-10-29","시즌 13 최종화 · 13기 젬 시리즈 카봇 마지막 등장",[[145,"",[]],[147,"",[]],[146,"",[]]]],[25,"1화","신비한 라이프 X와 모기와의 전쟁","2023-11-05","카봇 라이프 X 첫 등장 · 큐브시계 X로 업그레이드",[[161,"",[]],[153,"",[]]]],[25,"2화","모기가 된 장군이","2023-11-05","",[[161,"",[]],[153,"",[]],[9,"",["음성출연"]]]],[25,"3화","해초를 지켜줘","2023-11-12","",[[161,"",[]],[153,"",[]]]],[25,"4화","굴러온 공룡알","2023-11-19","",[[161,"",[]],[153,"",[]]]],[25,"5화","돌아온 라이프 X의 기억","2023-11-26","펭귄 마법사 유일한 등장 · 에이스 X, 댄디 X 색상 변경 후 첫 등장",[[161,"",[]],[1,"",["X"]],[3,"",["X"]]]],[25,"6화","우리 집이 달라졌어요","2023-12-03","차탄네 집 외부 변경 · 스톰 X, 프론 X, 스카이 X 색상 변경 후 첫 등장",[[161,"",[]],[5,"",["X"]],[2,"",["X"]],[4,"",["X"]]]],[25,"7화","구리구리 대전쟁","2023-12-10","펜타스톰 X 색상 변경 후 첫 합체",[[161,"",[]],[0,"",["X"]],[153,"",[]]]],[25,"8화","로봇 달리기 대회","2023-12-17","스톰 X 빅큐브 첫 등장 및 새니타이저 캐논 첫 등장",[[161,"",[]],[5,"",["X"]],[2,"",["X"]],[0,"",["X"]]]],[25,"9회","가상 현실을 깨버려 카봇","2023-12-24","카봇 킹가이즈의 X 카봇 형태 업그레이드",[[30,"",["X"]],[0,"",["X"]]]],[25,"10화","가뭄 바이러스를 막아줘","2023-12-31","",[[30,"",["X"]],[0,"",["X"]],[161,"",[]]]],[25,"11화","AI 로봇이 된 라인 로봇","2024-01-07","카봇과 라인 일가의 휴전 에피소드 4 · 헬로카봇 본편 통산 400화",[[30,"",["X"]],[153,"",[]]]],[25,"12화","구조견 차바둑","2024-01-14","사파리세이버 마지막 등장",[[30,"",["X"]],[153,"",[]]]],[25,"13화","한겨울 밤의 눈싸움","2024-01-21","카봇과 라인 일가의 휴전 에피소드 5",[[0,"",["X"]],[30,"",["X"]]]],[25,"14화","빅터의 첫사랑","2024-02-25","카봇 빅터 첫 등장. 티라쿵 황금특공대로 각성.",[[164,"",[]],[163,"",["황금특공대"]],[1,"",["X"]]]],[25,"15화","달팽이집을 찾아줘","2024-03-03","",[[164,"",[]],[163,"",["황금특공대"]],[0,"",["X"]],[161,"",[]]]],[25,"16화","파인애플빵의 비밀","2024-03-10","레포스 마지막 등장",[[164,"",[]],[159,"",[]],[163,"",["황금특공대"]]]],[25,"17화","스타가 된 수지","2024-03-17","일렉트롬 마지막 등장",[[164,"",[]],[160,"",[]],[163,"",["황금특공대"]]]],[25,"18화","우주 빨래방을 구해줘","2024-03-24","카봇 마이티가드의 X 카봇 형태 업그레이드 및, 크루 마이티 첫 등장",[[17,"",["X"]],[162,"",[]]]],[25,"19화","사라진 우승시계","2024-03-31","호크 X 색상 변경 후 첫 등장, 호크 X 빅큐브 첫 등장",[[1,"",["X"]],[6,"",["X"]],[17,"",["X"]]]],[25,"20화","운석폭탄을 막아줘","2024-04-07","마이티가드 아바타, 콰트로 클로 첫 등장",[[0,"",["X"]],[161,"",[]],[17,"",["X"]]]],[25,"21화","깨끗한 섬 만들기","2024-04-21","",[[6,"",["X"]],[17,"",["X"]]]],[25,"22화","개미 왕국을 지켜줘","2024-04-28","",[[17,"",["X"]]]],[25,"23화","바다의 교통사고","2024-05-05","",[[17,"",["X"]]]],[25,"24화","원숭이와 개의 전쟁","2024-05-12","",[[6,"",["X"]],[161,"",[]]]],[25,"25화","짜증나 케이크","2024-05-19","",[[1,"",["X"]],[6,"",["X"]]]],[25,"26화","전기를 만드는 박테리아","2024-05-26","시즌 14 최종화, 펜타스톰X 라이프 캐논 모드 양손 첫 합체 · 호크 마지막 등장",[[0,"",["X"]],[161,"",[]],[6,"",["X"]]]],[26,"1화","태풍 부는 날 생긴일","2024-06-30","카봇 삼총사의 X 카봇 형태인 테이프 삼총사로 업그레이드",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[11,"",["X"]]]],[26,"2화","달걀도둑을 잡아줘","2024-07-07","",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[11,"",["X"]]]],[26,"3화","테이프 삼총사 대 거미봇","2024-07-14","",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[1,"",["X"]],[11,"",["X"]]]],[26,"4화","소원을 들어주는 나무","2024-07-21","테이프 삼총사 1 ~ 4화까지 연속등장.",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[17,"",["X"]],[11,"",["X"]]]],[26,"5화","지하에서 불이 났어요","2024-08-04","올스타 카봇 첫 등장 · 카봇 골드렉스 레스큐 올스타 형태 업그레이드",[[17,"",["X"]],[28,"",["올스타"]]]],[26,"6화","까마귀 숲의 비밀","2024-08-11","크루 마이티, 골드렉스 마지막 등장",[[17,"",["X"]],[28,"",["올스타"]],[162,"",[]]]],[26,"7화","자전거 도둑을 잡아줘","2024-08-18","카봇 폴리스타, 스카이스타 첫 등장",[[166,"",[]],[167,"",[]]]],[26,"8화","강아지 목욕탕","2024-08-25","",[[166,"",[]],[167,"",[]]]],[26,"9화","우리는 멋진 짝꿍","2024-09-01","카봇 K-캅스 올스타 형태 업그레이드",[[166,"",[]],[167,"",[]],[18,"",["올스타"]]]],[26,"10화","썰매개 차바둑","2024-09-08","카봇 파이어스타, 아이언스타 첫 등장",[[168,"",[]],[169,"",[]]]],[26,"11화","차탄과 신드바드의 모험","2024-09-15","",[[168,"",[]],[169,"",[]],[18,"",["올스타"]],[1,"",["X","특수차"]]]],[26,"12화","손톱을 예쁘게 만들어줘요","2024-09-22","",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[168,"",[]],[169,"",[]],[1,"",["X","특수차"]],[11,"",["X"]]]],[26,"13화","산악열차가 위험해","2024-09-29","카봇 스타가디언 첫 합체",[[165,"",[]]]],[26,"14화","얼음의 습격","2024-10-06","",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[165,"",[]],[11,"",["X"]]]],[26,"15화","국가안보를 지키는 금붕어","2024-10-13","빅터, 티라쿵 마지막 등장 · 스타가디언 7화 ~ 15화까지 연속으로 등장",[[165,"",[]],[164,"",[]],[163,"",["황금특공대"]]]],[26,"16화","돌아온 우가바 X","2024-10-20","카봇 우가바의 X 카봇 형태 업그레이드 · 엉토킹, 코리리 마지막 등장",[[27,"",["X"]],[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[1,"",["X"]],[11,"",["X"]]]],[26,"17화","판다킹이 왔어요","2024-10-27","판다킹 첫등장",[[27,"",["X"]]]],[26,"18화","최강의 장난꾸러기들","2024-11-03","",[[27,"",["X"]],[1,"",["X"]]]],[26,"19화","신기한 요술펜","2024-11-10","우가바 마지막 등장",[[27,"",["X"]],[30,"",["X"]]]],[26,"20화","탈출한 악어 삼남매","2024-11-17","레디, 큐어의 본격적인 유일한 단독활동",[[19,"",["X"]],[20,"",["X"]],[165,"",[]]]],[26,"21화","미용봉사 하던날 생긴일","2024-11-24","헬프, 가드의 본격적인 유일한 단독활동",[[22,"",["X"]],[21,"",["X"]],[165,"",[]]]],[26,"22화","잃어버린 여의봉","2024-12-01","",[[0,"",["X"]],[161,"",[]],[165,"",[]]]],[26,"23화","사라진 그림자","2024-12-08","",[[0,"",["X"]],[161,"",[]],[165,"",[]]]],[26,"24화","노래하는 사막","2024-12-15","라이프 X 마지막 등장",[[0,"",["X"]],[161,"",[]],[165,"",[]]]],[26,"25화","북극에 나타난 도둑","2024-12-22","",[[165,"",[]],[0,"",["X"]]]],[26,"26화","용암을 막아줘","2024-12-29","시즌 15 파트 1 종료 · 카봇 로드세이버 올스타 형태 업그레이드",[[165,"",[]],[7,"",["올스타"]]]],[26,"27화","둘보다 셋이 좋아","2025-01-26","시즌 15 파트 2 시작 · 카봇 호프, 카봇 펀치마스터 첫 등장",[[170,"",[]],[171,"",[]]]],[26,"28화","카구리온을 찾아라","2025-02-02","",[[170,"",[]]]],[26,"29화","양파의 눈물","2025-02-09","카봇 울티맥스, 카봇 가디언트 올스타 형태 업그레이드 · 가디언트 마지막 등장",[[170,"",[]],[100,"",["올스타"]],[111,"",["올스타"]]]],[26,"30화","일리피카를 구해줘","2025-02-16","",[[170,"",[]],[100,"",["올스타"]]]],[26,"31화","장난감랜드에서 생긴일","2025-02-23","울티맥스 마지막 등장",[[171,"",[]],[100,"",["올스타"]]]],[26,"32화","펀치마스터VS사마귀봇","2025-03-02","",[[171,"",[]],[1,"",["X"]]]],[26,"33화","걷기만해도 배터리 충전","2025-03-09","호프 마지막 등장",[[170,"",[]],[171,"",[]]]],[26,"34화","판다킹의 관계 노트","2025-03-16","펀치마스터 마지막 등장",[[171,"",[]],[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[11,"",["X"]]]],[26,"35화","비행선 타던 날 생긴일","2025-03-23","",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[165,"",[]],[11,"",["X"]]]],[26,"36화","쓰러진 화성탐사선","2025-03-30","",[[165,"",[]],[7,"",["올스타"]]]],[26,"37화","도자기 요정의 소원","2025-04-06","아티, 세이버 마지막 등장",[[165,"",[]],[7,"",["올스타"]],[8,"",[]],[10,"",[]]]],[26,"38화","감자를 뽑아줘","2025-04-13","",[[165,"",[]]]],[26,"39화","만두 만들기","2025-04-20","시즌 15 최종화 · 스타가디언 마지막 등장",[[165,"",[]]]],[27,"1화","바다를 구해줘\n&보물을 찾아라","2024-08-12","3기 1화/3기 2화 · 카봇 트루 올스타 형태 업그레이드",[[16,"",[]],[15,"",["경찰특공대"]],[17,"",[]]]],[27,"2화","K-캅스의 등장\n&사라진 도시가스","2024-08-19","3기 10화/3기 11화 · 카봇 프론 폴리스 올스타 형태 업그레이드",[[2,"",["특수차","크리스탈"]],[18,"",["경찰특공대"]],[17,"",[]]]],[27,"3화","전화를 조심해\n&요리사 K-캅스","2024-08-26","3기 19화/4기 3화 · 카봇 세이버 올스타 형태 업그레이드",[[18,"",["경찰특공대"]],[15,"",["경찰특공대"]],[10,"",["크리스탈"]]]],[27,"4화","천둥의 비밀\n&엄마를 찾아줘","2024-09-02","3기 20화/4기 2화 · 카봇 우가바와 카봇 골드렉스의 올스타 형태 업그레이드",[[15,"",["경찰특공대"]],[27,"",["메탈릭"]],[28,"",["황금특공대"]]]],[27,"5화","택배를 찾아줘\n&엄마의 트럭배달","2024-09-09","5기 2화/8기 9화 · 고람빅쿵과 브론테로빅쿵 올스타 형태 업그레이드",[[28,"",["특수차","크리스탈"]],[94,"",["크리스탈"]],[95,"",["크리스탈"]],[42,"",[]]]],[27,"6화","차탄네 박 열렸네!\n&아기야, 조금만 기다려!","2024-09-16","4기 11화/4기 12화",[[28,"",["특수차","크리스탈"]],[17,"",[]],[29,"",[]]]],[27,"7화","터널에서 생긴일\n&깔깔 바이러스","2024-09-23","4기 1화/4기 7화 · 카봇 에이스 레스큐 올스타 형태 업그레이드",[[1,"",["특수차","메탈릭"]],[6,"",[]],[17,"",[]],[28,"",["특수차","크리스탈"]],[29,"",[]]]],[27,"8화","식충식물을 막아라\n&선생님의 소개팅","2024-09-30","2기 23화/3기 5화 · 카봇 로드세이버 올스타 형태 첫 합체",[[15,"",["경찰특공대"]],[16,"",[]],[7,"",["크리스탈"]]]],[27,"9화","노파라 빌딩을 구해줘\n&장난꾸러기 우가바","2024-10-07","3기 6화/3기 7화",[[17,"",[]],[27,"",["메탈릭"]],[8,"",[]],[9,"",[]],[10,"",["크리스탈"]]]],[27,"10화","불량식품을 없애줘&\n달에서 생긴일","2024-10-14","3기 8화/3기 13화",[[15,"",["경찰특공대"]],[17,"",[]],[7,"",["크리스탈"]]]],[27,"11화","비행카봇 골드렉스&\n사랑해 세이버","2024-10-21","3기 17화/3기 18화",[[12,"",[]],[13,"",[]],[14,"",[]],[27,"",["메탈릭"]],[28,"",["황금특공대"]],[7,"",["크리스탈"]],[10,"",[]],[11,"",[]]]],[27,"12화","전설의 킹가이즈&\n호수에서 생긴일","2024-10-28","3기 23화/3기 24화 · 카봇 킹가이즈 올스타 형태 첫 업그레이드",[[17,"",[]],[30,"",["청록색"]]]],[27,"13화","나쁜 글을 쓰지마&\n토성탐사로봇 토탐","2024-11-04","3기 25화/4기 5화",[[30,"",["청록색"]],[16,"",[]],[15,"",["특수차"]]]],[27,"14화","꿈속에서 생긴 일&\n쿼카 오던 날!","2024-11-11","4기 6화/4기 13화",[[29,"",[]],[30,"",["청록색"]],[18,"",["경찰특공대"]],[15,"",["경찰특공대"]]]],[27,"15화","자동차 캠핑장에서 생긴 일&\n기름이 미끌미끌","2024-11-18","13기 11화/13기 12화 · 카봇 사파리세이버 올스타 형태 첫 업그레이드",[[153,"",["크리스탈"]]]],[27,"16화","삼순이와 수지의 모험&\n빠빠와 짱짱이 왔어요","2024-11-25","13기 13화/13기 14화",[[153,"",["크리스탈"]]]],[27,"17화","크리스탈 펜타스톰 X의 탄생&\n이상한 색종이","2024-12-02","13기 19화/13기 24화",[[153,"",["크리스탈"]],[0,"",["크리스탈","X"]]]],[27,"18화","동물 때문에 바쁘다 바빠&\n구리구리 대전쟁","2024-12-09","13기 25화/14기 7화",[[153,"",["크리스탈"]],[0,"",["X"]],[161,"",[]]]],[27,"19화","풍력발전기를 찾아줘&\n갯벌에서 생긴 일 1","2024-12-16","11기 15화/11기 16화 · 카봇 킹가이더 올스타 형태 첫 업그레이드",[[125,"",["크리스탈"]]]],[27,"20화","갯벌에서 생긴 일 2&\n만능리모컨","2024-12-23","11기 17화/11기 20화",[[125,"",["크리스탈"]]]],[27,"21화","용왕님을 살려줘&\n날아라 삐약이 2호","2024-12-30","11기 23화/11기 26화",[[125,"",["크리스탈"]]]],[27,"22화","목도리 도마뱀을 구해줘&\n정글에서 생긴 일","2025-01-06","9기 20화/9기 21화 · 카봇 라이캅스 올스타 형태 첫 업그레이드",[[100,"",["크리스탈"]],[66,"",["남색"]]]],[27,"23화","벌통을 지켜줘!&\n이상한 안개","2025-01-13","9기 23화/9기 24화 · 카봇 모:반 올스타 형태 첫 업그레이드",[[100,"",["크리스탈"]],[97,"",["크리스탈"]],[96,"",[]]]],[27,"24화","가짜를 잡아줘&\n배달을 도와줘","2025-01-20","9기 26화/10기 3화",[[100,"",["크리스탈"]],[97,"",["크리스탈"]],[111,"",["크리스탈"]]]],[27,"25화","고양이 몽실이를 구해줘&\n울지마 카봇","2025-01-27","10기 8화/10기 15화",[[111,"",["크리스탈"]],[104,"",[]],[107,"",[]]]],[27,"26화","황금튤립을 찾아줘&\n금 나와라 뚝딱","2025-02-04","올스타 최종화 · 10기 20화/10기 24화",[[111,"",["크리스탈"]],[118,"",[]],[103,"",["황금특공대"]]]],[28,"1화","내 친구 헬로 카봇&자동차 극장에서 생긴일","2025-05-07","1기 1화&1기 6화",[[1,"",[]],[6,"",[]]]],[28,"2화","우리 집을 부탁해&뺑소니를 잡아라","2025-05-07","1기 7화&1기 8화",[[6,"",[]],[2,"",[]]]],[28,"3화","우주를 지켜라&조각상을 지켜라","2025-05-14","1기 9화&1기 10화",[[1,"",[]],[6,"",[]],[3,"",[]]]],[28,"4화","키즈파크에서 생긴 일&동물원에서 생긴일","2025-05-21","1기 13화&1기 14화",[[2,"",[]],[3,"",[]]]],[28,"5화","눈 오는 날 생긴 일&도시의 영웅","2025-05-28","1기 11화&1기 15화",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]]]],[28,"6화","은행에서 생긴 일&잠수함을 구해줘!","2025-06-04","1기 16화&1기 19화",[[1,"",[]],[6,"",[]],[3,"",[]],[4,"",[]]]],[28,"7화","공룡뼈를 지켜라&공룡이 살아났다","2025-06-04","1기 12화&1기 20화",[[2,"",[]],[3,"",[]],[6,"",[]],[4,"",[]]]],[28,"8화","도시괴담&어린이 경찰캠프","2025-06-11","1기 16화&1기 19화",[[2,"",[]],[6,"",[]],[3,"",[]]]],[28,"9화","펜타스톰의 탄생&구리구리를 막아라","2025-06-18","1기 23화&1기 24화",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]],[0,"",[]]]],[28,"10화","한강에서 생긴 일&운석을 막아라","2025-06-25","1기 25화&1기 26화",[[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[5,"",[]]]],[28,"11화","목장에서 생긴 일&양말도 한 짝 신발도 한 짝","2025-07-01","2기 18화&3기 3화",[[16,"",[]],[8,"",[]],[15,"",[]]]],[28,"12화","산불을 막아라&카봇 아르바이트","2025-07-08","3기 4화&3기 11화",[[17,"",[]],[12,"",[]],[13,"",[]],[14,"",[]],[1,"",[]],[6,"",[]],[2,"",[]],[3,"",[]],[4,"",[]],[11,"",[]]]],[28,"13화","달려라 천둥&조각공원에서 생긴 일","2025-07-15","올스타:오리지널 최종화 · 3기 9화&3기 26화",[[-1,"킹가이즈를 제외한 1~3기 카봇 전원",[]]]],[29,"1화","전설의 용사 카봇 X","2025-06-22","카봇 X 첫 등장",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[175,"",[]],[181,"",["실루엣출연"]],[174,"",["실루엣출연"]],[173,"",["실루엣출연"]],[11,"",["X"]]]],[29,"2화","꼬여버린 시공간","2025-06-29","에이스 레스큐 X 리파인 형태 격하",[[1,"",["리파인"]],[9,"",[]],[175,"",[]]]],[29,"3화","전깜신의 등장","2025-07-06","프론 폴리스 X 리파인 형태 격하",[[2,"",["리파인"]],[175,"",[]]]],[29,"4화","밀가루 인형과 하이드","2025-07-13","카봇 하이드 첫 등장 및 기억 상실",[[1,"",["리파인"]],[2,"",["리파인"]],[175,"",[]],[181,"",[]]]],[29,"5화","어둠의 마법사 카봇 하이드","2025-07-20","댄디 앰뷸런스 X 리파인 형태 격하 · 그랜드 카봇 X의 합체 멤버들 구성원 첫 등장 및 첫 합체",[[3,"",["리파인"]],[173,"",[]],[181,"",[]]]],[29,"6화","땅이 움찔움찔 몸도 움찔움찔","2025-07-27","스카이 SWAT X 리파인 형태 격하",[[4,"",["리파인"]],[173,"",[]],[181,"",[]]]],[29,"7화","빨라나무를 지켜줘","2025-08-03","",[[3,"",["리파인"]],[4,"",["리파인"]],[173,"",[]],[181,"",[]],[9,"",["음성출연"]]]],[29,"8화","하늘의 창 캐논 X","2025-08-10","카봇 캐논 X 첫 등장",[[173,"",[]],[174,"",[]],[181,"",[]]]],[29,"9화","석유가 사라졌어요","2025-08-17","",[[174,"",[]],[181,"",[]]]],[29,"10화","북극 요정을 구해줘","2025-08-24","그랜드 카봇 GX 첫 합체",[[1,"",["리파인"]],[2,"",["리파인"]],[172,"",[]],[181,"",[]]]],[29,"11화","하나가 된 전설의 용사들","2025-08-31","하이드 아군화",[[1,"",["리파인"]],[2,"",["리파인"]],[172,"",[]],[181,"",[]]]],[29,"12화","운석이 달나라에 떨어졌어요","2025-09-07","스톰 X 및 펜타스톰 X 리파인 형태 격하",[[0,"",["리파인"]],[172,"",[]],[181,"",[]],[5,"",["리파인"]]]],[29,"13화","사막에서 낚시를 해요","2025-09-14","",[[0,"",["리파인"]],[172,"",[]],[181,"",[]]]],[29,"14화","형사 카봇! 히트가이와 코드가이","2025-09-28","카봇 코드가이, 카봇 히트가이 첫 등장",[[180,"",[]],[179,"",[]]]],[29,"15화","브레이브 킹덤의 전설 1","2025-10-05","",[[172,"",[]],[181,"",[]],[9,"",[]]]],[29,"16화","브레이브 킹덤의 전설 2","2025-10-12","",[[172,"",[]],[181,"",[]],[9,"",[]]]],[29,"17화","변장 도둑을 잡아줘","2025-10-19","",[[180,"",[]],[179,"",[]]]],[29,"18화","최강 방패 버블 막","2025-10-26","카봇 패트롤가이즈 첫 합체",[[178,"",[]]]],[29,"19화","홰가 나타났어요","2025-11-02","",[[178,"",[]]]],[29,"20화","하이드의 마법이 사라졌어요","2025-11-09","",[[172,"",[]],[181,"",[]],[9,"",[]]]],[29,"21화","어제가 사라졌어요.","2025-11-16","",[[172,"",[]],[181,"",[]]]],[29,"22화","뻥뻥트론을 찾아줘","2025-11-23","",[[-1,"용사 카봇 전원",[]],[18,"",["올스타"]]]],[29,"23화","사라진 마법의 주차장","2025-11-30","마이티가드 X 유일한 원본 형태 격하 · 가드 마지막 등장",[[-1,"용사 카봇 전원",[]],[17,"",[]],[21,"",[]]]],[29,"24화","지진 도둑을 막아줘","2025-12-07","카봇 마이티캅스 첫 합체",[[0,"",["리파인"]],[182,"",[]]]],[29,"25화","익룡이 나타났어요","2025-12-21","킹가이즈 마지막 등장",[[30,"",["X"]],[182,"",[]]]],[29,"26화","바다괴물의 습격","2025-12-28","시즌 16 최종화",[[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[178,"",[]],[182,"",[]],[11,"",["X"]]]],[30,"1화","하늘 안에 진공 청소기","2026-02-15","",[[182,"",[]],[178,"",[]]]],[30,"2화","양털 도둑을 잡아 줘","2026-02-22","",[[182,"",[]],[178,"",[]]]],[30,"3화","아빠의 멋진 복수","2026-03-08","",[[182,"",[]],[178,"",[]]]],[30,"4화","물고기 가족을 찾아줘","2026-03-15","",[[182,"",[]],[178,"",[]]]],[30,"5화","안마의자가 변했어요","2026-03-22","카봇 빅포트및 카봇 EV 커맨더 첫 등장",[[185,"",[]],[186,"",[]]]],[30,"6화","바오밥 나무 살리기","2026-03-29","",[[182,"",[]],[185,"",[]],[186,"",[]]]],[30,"7화","우주해적은 펫 돌보미","2026-04-05","아머리돈의 첫 등장",[[182,"",[]],[185,"",[]],[186,"",[]]]],[30,"8화","접착제가 끈적끈적","2026-04-19","",[[182,"",[]],[185,"",[]],[186,"",[]]]],[30,"9화","멋지다 드론 쇼!","2026-04-26","카봇 스카이 트리오 첫 등장",[[188,"",[]],[189,"",[]],[190,"",[]],[187,"",[]]]],[30,"10화","오존층을 지켜줘","2026-05-03","",[[188,"",[]],[189,"",[]],[190,"",[]],[187,"",[]]]],[30,"11화","로제 누나의 아파트","2026-05-10","",[[182,"",[]],[185,"",[]],[186,"",[]]]],[30,"12화","초승달이 부러질 것 같아요","2026-05-17","",[[188,"",[]],[189,"",[]],[190,"",[]],[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[11,"",["X"]],[187,"",[]]]],[30,"13화","동네 축제에서 생긴 일","2026-05-24","",[[188,"",[]],[189,"",[]],[190,"",[]],[12,"",["X"]],[13,"",["X"]],[14,"",["X"]],[11,"",["X"]],[187,"",[]]]]],"robots":[{"n":"펜타스톰","a":["펜타스톰 X","크리스탈 펜타스톰 X","펜타스톰 X빅큐브","라이프 캐논 모드","펜타스톰 리파인"],"s":1,"m":["스톰","에이스","프론","댄디","스카이"]},{"n":"에이스","a":["에이스 레스큐 X","크리스탈 에이스 레스큐 X","에이스 리파인"],"s":1,"p":["펜타스톰"]},{"n":"프론","a":["프론 폴리스 X","크리스탈 프론 폴리스 X","프론 리파인"],"s":1,"p":["펜타스톰"]},{"n":"댄디","a":["댄디 앰뷸런스 X","크리스탈 댄디 앰뷸런스 X","댄디 리파인"],"s":1,"p":["펜타스톰"]},{"n":"스카이","a":["스카이 S.W.A.T X","크리스탈 스카이 S.W.A.T X","스카이 리파인"],"s":1,"p":["펜타스톰"]},{"n":"스톰","a":["스톰 X","크리스탈 스톰 X","스톰 X 빅큐브","스톰 리파인"],"s":1,"p":["펜타스톰"]},{"n":"호크","a":["호크 X","크리스탈 호크 X","호크 X 빅큐브"],"s":1},{"n":"로드세이버","a":["로드세이버 올스타"],"s":2},{"n":"아티","s":2},{"n":"마이스터","s":2},{"n":"세이버","a":["세이버 올스타"],"s":2},{"n":"삼총사","a":["테이프 삼총사"],"s":2,"m":["나이트","루크","폰"]},{"n":"나이트","a":["나이트 X"],"s":2,"p":["삼총사"]},{"n":"루크","a":["루크 X"],"s":2,"p":["삼총사"]},{"n":"폰","a":["폰 X"],"s":2,"p":["삼총사"]},{"n":"트루","a":["트루 폴리스"],"s":2},{"n":"본","s":2},{"n":"마이티가드","a":["마이티가드 X"],"s":3,"m":["레디","큐어","가드","헬프","크루 마이티"]},{"n":"K-캅스","a":["K-캅스 스와트 올스타"],"s":3,"m":["썬더","스피드","터보","캅스"]},{"n":"레디","a":["레디 X"],"s":3,"p":["마이티가드","마이티캅스"]},{"n":"큐어","a":["큐어 X"],"s":3,"p":["마이티가드","마이티캅스"]},{"n":"가드","a":["가드 X"],"s":3,"p":["마이티가드"]},{"n":"헬프","a":["헬프 X"],"s":3,"p":["마이티가드","마이티캅스"]},{"n":"썬더","a":["썬더 올스타"],"s":3,"p":["K-캅스"]},{"n":"스피드","a":["스피드 올스타"],"s":3,"p":["K-캅스"]},{"n":"터보","a":["터보 올스타"],"s":3,"p":["K-캅스"]},{"n":"캅스","a":["캅스 올스타"],"s":3,"p":["K-캅스","마이티캅스"]},{"n":"우가바","a":["우가바 캡틴","우가바 X"],"s":3},{"n":"골드렉스","a":["골드렉스 레스큐","골드렉스 레스큐 올스타"],"s":3},{"n":"제트렌","s":3},{"n":"킹가이즈","a":["킹가이즈 X"],"s":3},{"n":"슈퍼패트론","s":4},{"n":"패트론S","s":4,"m":["패트론","스키드"]},{"n":"다이어EX","s":4,"m":["다이어","리프"]},{"n":"패트론","s":4,"p":["패트론S"]},{"n":"스키드","s":4,"p":["패트론S"]},{"n":"다이어","s":4,"p":["다이어EX"]},{"n":"리프","s":4,"p":["다이어EX"]},{"n":"하이퍼빌디언","s":5},{"n":"빌디언","s":5},{"n":"듀크","s":5},{"n":"크랜","s":5},{"n":"프라우드제트","s":5,"m":["프라우드","제스티"]},{"n":"스타블래스터","s":5,"m":["블래스터","스타비"]},{"n":"프라우드","s":5,"p":["프라우드제트"]},{"n":"제스티","s":5,"p":["프라우드제트"]},{"n":"블래스터","s":5,"p":["스타블래스터"]},{"n":"스타비","s":5,"p":["스타블래스터"]},{"n":"아머다이저","s":5},{"n":"킹다이저","s":5},{"n":"아머포스","s":5},{"n":"에반 프라임","s":5,"c":"유니티 카봇"},{"n":"드라고닉스","s":5,"c":"유니티 카봇"},{"n":"메타팔콘","s":5,"c":"유니티 카봇"},{"n":"마하피스","s":5},{"n":"브레이로드","a":["브레이브ㆍ로드"],"s":5},{"n":"비트런","s":5},{"n":"메가볼드","s":5},{"n":"오토소닉","s":5},{"n":"아이언트","s":6},{"n":"아이누크","s":6},{"n":"럭키펀치","s":6},{"n":"컨버스터","s":6},{"n":"스타피너","s":6},{"n":"메디언트","s":7},{"n":"파이언트","s":7},{"n":"라이캅스","s":7},{"n":"앵그리퍼프","s":7},{"n":"유니크루저","s":7},{"n":"제트크루저","s":7},{"n":"테로 프라임","s":7,"c":"유니티 카봇"},{"n":"피닉스 프라임","s":7,"c":"유니티 카봇"},{"n":"미리내 프라임","s":7,"c":"유니티 카봇","r":["피닉스 프라임"]},{"n":"무간 프라임","s":7,"c":"유니티 카봇"},{"n":"베노사 프라임","s":7,"c":"유니티 카봇"},{"n":"카이온 프라임","s":7,"c":"유니티 카봇"},{"n":"독꼬리 프라임","s":7,"c":"유니티 카봇"},{"n":"가고토스 프라임","s":7,"c":"유니티 카봇"},{"n":"프테라드롭쿵","s":7,"c":"알카봇"},{"n":"랩터쿵","s":7,"c":"알카봇"},{"n":"안킬로쿵","s":7,"c":"알카봇"},{"n":"아르케쿵","s":7,"c":"알카봇"},{"n":"스피너블","s":7},{"n":"버디가드","s":7},{"n":"스카이거너","s":7},{"n":"소나다이버","s":7},{"n":"그리핑크스 프라임","s":8,"c":"유니티 카봇"},{"n":"디스크캐논 프라임","s":8,"c":"유니티 카봇"},{"n":"이구아드롭쿵","s":8,"c":"알카봇"},{"n":"아르시노쿵","s":8,"c":"알카봇"},{"n":"파라사쿵","s":8,"c":"알카봇"},{"n":"디메트로쿵","s":8,"c":"알카봇"},{"n":"파키케쿵","s":8,"c":"알카봇"},{"n":"딜로포쿵","s":8,"c":"알카봇"},{"n":"고람빅쿵","s":8,"c":"알카봇"},{"n":"브론테로빅쿵","a":["브론테로 쿵"],"s":8,"c":"알카봇"},{"n":"테크노마스터","s":8},{"n":"모:반","s":9,"m":["레이저","레이저 카고"]},{"n":"레이저","s":9,"p":["모:반"]},{"n":"레이저 카고","s":9,"p":["모:반"]},{"n":"울티맥스","a":["울티맥스 올스타"],"s":9,"m":["정글러","티엠피"]},{"n":"정글러","a":["정글러 올스타"],"s":9,"p":["울티맥스"]},{"n":"티엠피","a":["티엠피 올스타"],"s":9,"p":["울티맥스"]},{"n":"파워크루저","s":9},{"n":"잭슈트뱅","s":10},{"n":"페로뱅","s":10},{"n":"나노티스뱅","s":10},{"n":"썬런뱅","s":10},{"n":"호스퍼스뱅","s":10},{"n":"자크뱅","s":10},{"n":"자크레인뱅","s":10},{"n":"가디언트","a":["가디언트 올스타"],"s":10,"m":["덤피","브로피"]},{"n":"자이언트 로더","s":10,"m":["로더","소닉붐","페이저"]},{"n":"덤피","a":["덤피 올스타"],"s":10,"p":["가디언트"]},{"n":"브로피","a":["브로피 올스타"],"s":10,"p":["가디언트"]},{"n":"로더","s":10,"p":["자이언트 로더"]},{"n":"소닉붐","s":10,"p":["자이언트 로더"]},{"n":"페이저","s":10,"p":["자이언트 로더"]},{"n":"마이티로","a":["티로"],"s":10},{"n":"저스포스","s":11},{"n":"레드와일러","s":11},{"n":"나이트호퍼","s":11},{"n":"맥스도저","s":11},{"n":"샌드버스터","s":11},{"n":"록캔","s":11},{"n":"킹가이더","s":11,"m":["쿨가이더","핫가이더"]},{"n":"쿨가이더","s":11,"p":["킹가이더"]},{"n":"핫가이더","s":11,"p":["킹가이더"]},{"n":"베어하이더","s":11},{"n":"이글하이더","s":11},{"n":"하이퍼캅스","s":12,"m":["드로캅","이그리붐","푸르디붐","서포티붐"]},{"n":"드로캅","s":12,"p":["하이퍼캅스"]},{"n":"이그리붐","s":12,"p":["하이퍼캅스"]},{"n":"푸르디붐","s":12,"p":["하이퍼캅스"]},{"n":"서포티붐","s":12,"p":["하이퍼캅스"]},{"n":"레미밤밤","s":12},{"n":"아레스밤밤","s":12},{"n":"도저밤밤","s":12},{"n":"포레밤밤","s":12},{"n":"큐어밤밤","s":12},{"n":"스크류붐바","s":12},{"n":"파워붐바","s":12},{"n":"드릴버스트","s":12},{"n":"스톰다이버","s":12},{"n":"라란자","s":12},{"n":"윙버드젬","s":13},{"n":"토터젬","s":13},{"n":"디고베어젬","s":13},{"n":"인피니툴","s":13,"m":["톡시","캥복스","로어","스나이퍼"]},{"n":"톡시","a":["인피니툴 톡시 젬"],"s":13,"p":["인피니툴"]},{"n":"캥복스","a":["인피니툴 캥복스 젬"],"s":13,"p":["인피니툴"]},{"n":"로어","a":["인피니툴 로어 젬"],"s":13,"p":["인피니툴"]},{"n":"스나이퍼","a":["인피니툴 스나이퍼 젬"],"s":13,"p":["인피니툴"]},{"n":"사파리세이버","s":13,"m":["타이거붐","호크하이","드럼킹","스터번","하울러"]},{"n":"타이거붐","s":13,"p":["사파리세이버"]},{"n":"호크하이","s":13,"p":["사파리세이버"]},{"n":"드럼킹","s":13,"p":["사파리세이버"]},{"n":"스터번","s":13,"p":["사파리세이버"]},{"n":"하울러","s":13,"p":["사파리세이버"]},{"n":"레포스","s":13},{"n":"일렉트롬","s":13},{"n":"라이프 X","s":14},{"n":"크루 마이티","s":14,"p":["마이티가드"]},{"n":"티라쿵","s":14,"c":"알카봇"},{"n":"빅터","s":14},{"n":"스타가디언","s":15,"m":["폴리스타","스카이스타","파이어스타","아이언스타"]},{"n":"폴리스타","s":15,"p":["스타가디언"]},{"n":"스카이스타","s":15,"p":["스타가디언"]},{"n":"파이어스타","s":15,"p":["스타가디언"]},{"n":"아이언스타","s":15,"p":["스타가디언"]},{"n":"호프","s":15},{"n":"펀치마스터","s":15},{"n":"그랜드 카봇 GX","s":16,"m":["그랜드 카봇 X","캐논 X"]},{"n":"그랜드 카봇 X","s":16,"p":["그랜드 카봇 GX"],"m":["카봇 X","엑스 파이터","엑스 트레인"]},{"n":"캐논 X","s":16,"p":["그랜드 카봇 GX"]},{"n":"카봇 X","s":16,"p":["그랜드 카봇 X"]},{"n":"엑스 파이터","s":16,"p":["그랜드 카봇 X"]},{"n":"엑스 트레인","s":16,"p":["그랜드 카봇 X"]},{"n":"패트롤가이즈","s":16,"m":["코드가이","히트가이"]},{"n":"코드가이","s":16,"p":["패트롤가이즈"]},{"n":"히트가이","s":16,"p":["패트롤가이즈"]},{"n":"하이드","s":16},{"n":"마이티캅스","s":16,"m":["레디","큐어","헬프","캅스"]},{"n":"울트라포트 GX","s":17,"m":["울트라포트"]},{"n":"울트라포트","s":17,"p":["울트라포트 GX"],"m":["빅포트","EV 커맨더"]},{"n":"빅포트","s":17,"p":["울트라포트"]},{"n":"EV 커맨더","s":17,"p":["울트라포트"]},{"n":"스카이 트리오","s":17,"m":["제트밴더","에어밴더","헬리밴더"]},{"n":"제트밴더","s":17,"p":["스카이 트리오"]},{"n":"에어밴더","s":17,"p":["스카이 트리오"]},{"n":"헬리밴더","s":17,"p":["스카이 트리오"]},{"n":"티라클레스","mv":1},{"n":"테고","mv":1},{"n":"트리톤","mv":1},{"n":"테라제트","mv":1},{"n":"에이샤크","mv":1},{"n":"마이모스","mv":1},{"n":"팔로","mv":1},{"n":"티라이오","mv":1},{"n":"크라이언","mv":1},{"n":"코어","mv":1},{"n":"티라투스","mv":1},{"n":"킹도저","mv":1},{"n":"그린팜","mv":1},{"n":"마하"},{"n":"스밀로쿵","c":"알카봇"},{"n":"스테쿵","c":"알카봇"},{"n":"피노쿵","c":"알카봇"},{"n":"아칸스피어","k":"메카니멀"},{"n":"팔로노이드","k":"메카니멀"},{"n":"트윈캐논 드라코스","k":"메카니멀"},{"n":"울프닉스","k":"메카니멀"},{"n":"그란데본","k":"메카니멀"},{"n":"페탕크란츠","k":"메카니멀"},{"n":"메가 아칸","k":"메카니멀"},{"n":"프테라쿵","c":"알카봇"},{"n":"트리쿵","c":"알카봇"},{"n":"브라키쿵","c":"알카봇"},{"n":"모스쿵","c":"알카봇"},{"n":"마하로드"},{"n":"플레쿵","c":"알카봇"},{"n":"모사쿵","c":"알카봇"}],"minorTags":["사진출연","실루엣출연","음성출연","잠깐","화상출연"]}</script>
+<script>
+(() => {
+  'use strict';
+  document.documentElement.lang = 'ko';
+  const DATA = JSON.parse(document.getElementById('carbot-data').textContent);
+  const S = DATA.series, E = DATA.episodes, R = DATA.robots;
+  const MINOR = new Set(DATA.minorTags);
+  const IMG = {};  // hero photos double as result thumbnails when the page carries them
+  [['에이스', '.tcard.ace img'], ['펜타스톰', '.tcard.penta img']].forEach(([n, sel]) => { const im = document.querySelector(sel); if (im) IMG[n] = im.src; });
+  const TAG_LABEL = { '특수차': '특수차 모드', '음성출연': '목소리만', '화상출연': '화상통화로', '사진출연': '사진으로', '실루엣출연': '실루엣만', '잠깐': '잠깐 등장' };
+
+  // ---------- indexes ----------
+  const byName = new Map(R.map((r, i) => [r.n, i]));
+  const appear = R.map(() => []);            // robot -> [[episodeIdx, castEntry]] in broadcast order
+  E.forEach((e, ei) => e[5].forEach(c => { if (c[0] >= 0) appear[c[0]].push([ei, c]); }));
+  const count = appear.map(a => a.length);
+  const seriesById = new Map(S.map((s, i) => [s.id, i]));
+  const firstSeries = R.map((r, i) => {
+    if (appear[i].length) return E[appear[i][0][0]][0];
+    const si = seriesById.get('s' + r.s);
+    return si === undefined ? S.reduce((last, s, k) => (s.aired ? k : last), 0) : si;
+  });
+
+  // ---------- text helpers ----------
+  const escH = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const seasonNo = s => (s.name.match(/\d+/) || [''])[0];
+  function seriesTitle(s) {
+    if (s.kind === '본편') return s.name + (s.sub ? ' · ' + s.sub : '');
+    return s.kind + ' · ' + s.name;
+  }
+  function band(s) {
+    return s.kind === '본편' ? seasonNo(s) + '기' : s.kind === '스페셜' ? 'SP' : s.kind === '외전' ? '외전' : '영화';
+  }
+  function hasBatchim(word) {
+    const c = word.charCodeAt(word.length - 1);
+    if (c < 0xAC00 || c > 0xD7A3) return /[013678lmnr]$/i.test(word);
+    return (c - 0xAC00) % 28 !== 0;
+  }
+  const withRo = w => w + ((() => { const c = w.charCodeAt(w.length - 1); const j = (c >= 0xAC00 && c <= 0xD7A3) ? (c - 0xAC00) % 28 : 0; return j && j !== 8 ? '으로' : '로'; })());
+  const withI = w => w + (hasBatchim(w) ? '이' : '가');
+  const withEun = w => w + (hasBatchim(w) ? '은' : '는');
+
+  // ---------- 초성 / partial-syllable search ----------
+  const CHO = [...'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'];
+  const JONG = ['', ...'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'];
+  const JONG_SPLIT = { 'ㄳ': 'ㄱㅅ', 'ㄵ': 'ㄴㅈ', 'ㄶ': 'ㄴㅎ', 'ㄺ': 'ㄹㄱ', 'ㄻ': 'ㄹㅁ', 'ㄼ': 'ㄹㅂ', 'ㄽ': 'ㄹㅅ', 'ㄾ': 'ㄹㅌ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ', 'ㅄ': 'ㅂㅅ' };
+  const SEP = '[\\s·ㆍ:.\\-!/,~&()]*';
+  const STRIP = /[\s·ㆍ:.\-!/,~&()]+/g;
+  const chr = c => String.fromCharCode(c);
+  const escR = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const choClass = ci => { const s = 0xAC00 + ci * 588; return '[' + chr(s) + '-' + chr(s + 587) + CHO[ci] + ']'; };
+
+  function compile(query) {
+    const chars = [...query.replace(STRIP, '').toLowerCase()];
+    if (!chars.length) return null;
+    let hasSyl = false;
+    const parts = chars.map((ch, i) => {
+      const c = ch.charCodeAt(0);
+      if (c >= 0xAC00 && c <= 0xD7A3) {
+        hasSyl = true;
+        if (i < chars.length - 1) return escR(ch);
+        // last syllable may still be mid-typing: 페 → 펜, 탓 → 타+ㅅ…
+        const jong = (c - 0xAC00) % 28;
+        if (!jong) return '[' + chr(c) + '-' + chr(c + 27) + ']';
+        const split = JONG_SPLIT[JONG[jong]];
+        const keep = split ? JONG.indexOf(split[0]) : 0;
+        const next = CHO.indexOf(split ? split[1] : JONG[jong]);
+        return '(?:' + escR(ch) + '|' + chr(c - jong + keep) + SEP + (next >= 0 ? choClass(next) : '') + ')';
+      }
+      const ci = CHO.indexOf(ch);
+      return ci >= 0 ? choClass(ci) : escR(ch);
+    });
+    return { re: new RegExp(parts.join(SEP), 'i'), hasSyl, len: chars.length };
+  }
+
+  function scoreRobot(i, q) {
+    const r = R[i];
+    const names = [r.n].concat(r.a || []);
+    let best = null;
+    names.forEach((s, k) => {
+      const m = q.re.exec(s);
+      if (!m) return;
+      let sc = k === 0 ? 50 : 36;
+      if (m.index === 0) sc += 24;
+      if (m[0].length === s.length) sc += 30;
+      sc -= Math.min(12, (s.length - m[0].length) * 0.7);
+      if (!best || sc > best.sc) best = { sc, k, s, idx: m.index, len: m[0].length };
+    });
+    if (!best) return null;
+    best.sc += Math.min(12, Math.log2(1 + count[i]) * 2);
+    return best;
+  }
+
+  function search(raw) {
+    const q = compile(raw);
+    if (!q) return null;
+    const flat = raw.replace(STRIP, '');
+    const q2 = /^(카봇|ㅋㅂ)./.test(flat) ? compile(flat.replace(/^(카봇|ㅋㅂ)/, '')) : null;
+    const hits = [];
+    R.forEach((r, i) => {
+      let h = scoreRobot(i, q);
+      const h2 = q2 && scoreRobot(i, q2);
+      if (h2 && (!h || h2.sc - 4 > h.sc)) h = Object.assign(h2, { sc: h2.sc - 4 });
+      if (h) hits.push(Object.assign(h, { i }));
+    });
+    hits.sort((a, b) => b.sc - a.sc || count[b.i] - count[a.i]);
+    let titles = [];
+    if (q.hasSyl && q.len >= 2) {
+      E.forEach((e, ei) => { const m = q.re.exec(e[2]); if (m) titles.push({ ei, idx: m.index, len: m[0].length }); });
+    }
+    const series = q.len >= 2 ? S.map((s, si) => si).filter(si => [seriesTitle(S[si]), S[si].sub].some(n => n && q.re.test(n))) : [];
+    return { hits, titles, series };
+  }
+
+  // ---------- rendering ----------
+  let order = 'old';
+  try { order = localStorage.getItem('carbot-order') === 'new' ? 'new' : 'old'; } catch (e) {}
+  let shown = 8;
+
+  function mark(s, idx, len) {
+    if (idx == null) return escH(s);
+    return escH(s.slice(0, idx)) + '<mark>' + escH(s.slice(idx, idx + len)) + '</mark>' + escH(s.slice(idx + len));
+  }
+  function tagsHtml(tags, isDebut) {
+    let h = isDebut ? '<span class="tag star">★ 첫 등장</span>' : '';
+    (tags || []).forEach(t => {
+      h += '<span class="tag' + (MINOR.has(t) ? ' minor' : '') + '">' + escH(TAG_LABEL[t] || t) + '</span>';
+    });
+    return h ? '<span class="tags">' + h + '</span>' : '';
+  }
+  function plate(s, label) {
+    const num = label.replace(/화$/, '');
+    return '<span class="plate" aria-label="' + escH(seriesTitle(s) + ' ' + label) + '"><i>' + escH(band(s)) + '</i><b>' + escH(/^\d+$/.test(num) ? num + '화' : label) + '</b></span>';
+  }
+  function copyText(e) {
+    const s = S[e[0]];
+    return s.kind === '극장판' ? e[2] : '헬로카봇 ' + seriesTitle(s).replace(' · ', ' ') + ' ' + e[1] + ' ' + e[2];
+  }
+  function epRow(ei, c, debut, showSeries) {
+    const e = E[ei], s = S[e[0]];
+    const cast = e[5].map(x => x[0] >= 0
+      ? '<button class="chip ghost" type="button" data-bot="' + x[0] + '">' + escH(R[x[0]].n) + '</button>'
+      : '<span class="chip ghost" style="cursor:default">' + escH(x[1]) + '</span>').join('');
+    return '<li><details class="ep"><summary>' + plate(s, e[1]) +
+      '<span class="ep-title">' + escH(e[2]) + (showSeries ? '<span class="ep-series">' + escH(seriesTitle(s)) + (s.year ? ' · ' + s.year : '') + '</span>' : '') + '</span>' +
+      tagsHtml(c && c[2], debut) + '</summary><div class="ep-more">' +
+      (e[4] ? '<p class="ep-note">' + escH(e[4]) + '</p>' : '') +
+      (e[3] ? '<p class="ep-note">방영일 ' + escH(e[3].replace(/-/g, '.')) + '</p>' : '') +
+      '<p class="ep-cast-label">이 편에 나오는 카봇</p><div class="chips">' + (cast || '<span class="ep-note">기록 없음</span>') + '</div>' +
+      '<button class="copy" type="button" data-copy="' + escH(copyText(e)) + '">제목 복사</button>' +
+      '</div></details></li>';
+  }
+  function groupsHtml(list, debutEi, openAll, cls) {
+    const groups = new Map();
+    list.forEach(([ei, c]) => {
+      const si = E[ei][0];
+      if (!groups.has(si)) groups.set(si, []);
+      groups.get(si).push([ei, c]);
+    });
+    let keys = [...groups.keys()];
+    if (order === 'new') keys.reverse();
+    return keys.map(si => {
+      const s = S[si], rows = groups.get(si);
+      const items = (order === 'new' ? rows.slice().reverse() : rows).map(([ei, c]) => epRow(ei, c, ei === debutEi, false)).join('');
+      return '<details class="grp' + (cls ? ' ' + cls : '') + '"' + (openAll ? ' open' : '') + '><summary><span class="grp-name">' + escH(seriesTitle(s)) +
+        '</span><span class="grp-year">' + (s.year || '') + '</span><span class="grp-n">' + rows.length + '편</span></summary><ol class="ep-list">' + items + '</ol></details>';
+    }).join('');
+  }
+  function debutOf(i) {
+    const a = appear[i];
+    if (!a.length) return null;
+    return a.find(([, c]) => !(c[2] || []).some(t => MINOR.has(t))) || a[0];
+  }
+  function robotCard(h) {
+    const i = h.i, r = R[i], a = appear[i];
+    const d = debutOf(i);
+    const meta = [];
+    const fs = S[firstSeries[i]];
+    if (r.s) meta.push('시즌 ' + r.s + ' 카봇');
+    else if (fs) meta.push(fs.kind === '본편' ? fs.name + ' 카봇' : seriesTitle(fs) + ' 카봇');
+    if (r.k) meta.push(r.k);
+    if (r.c) meta.push(r.c);
+    if (r.m && r.m.length) meta.push(r.m.length + '대 합체·팀');
+    const nameHtml = h.k === 0 ? mark(r.n, h.idx, h.len) : escH(r.n);
+    let aliasHtml = '';
+    if (r.a && r.a.length) {
+      aliasHtml = '<p class="alias">다른 이름 · ' + r.a.map((s, k) => h.k === k + 1 ? mark(s, h.idx, h.len) : escH(s)).join(' · ') + '</p>';
+    }
+    let rel = '';
+    if (r.p && r.p.length) rel += '<span>합체하면</span>' + r.p.map(p => byName.has(p) ? '<button class="chip ghost" type="button" data-bot="' + byName.get(p) + '">' + escH(p) + ' →</button>' : '').join('');
+    if (r.m && r.m.length) rel += '<span>멤버</span>' + r.m.map(m => byName.has(m) ? '<button class="chip ghost" type="button" data-bot="' + byName.get(m) + '">' + escH(m) + '</button>' : '').join('');
+    if (r.r && r.r.length) rel += '<span>관련</span>' + r.r.map(m => byName.has(m) ? '<button class="chip ghost" type="button" data-bot="' + byName.get(m) + '">' + escH(m) + '</button>' : '').join('');
+    const debutHtml = d ? '<div class="debut"><span class="debut-label">★ 처음 나온 편</span>' + plate(S[E[d[0]][0]], E[d[0]][1]) +
+      '<span class="debut-title">' + escH(E[d[0]][2]) + '<small>' + escH(seriesTitle(S[E[d[0]][0]])) + (S[E[d[0]][0]].year ? ' · ' + S[E[d[0]][0]].year : '') + '</small></span></div>' : '';
+    let body = '';
+    if (a.length) {
+      body += '<div class="eps">' + groupsHtml(a, d && d[0], a.length <= 8, '') + '</div>';
+    }
+    const viaParents = (r.p || []).filter(p => byName.has(p) && appear[byName.get(p)].length);
+    viaParents.forEach(p => {
+      const pa = appear[byName.get(p)].filter(([ei]) => !a.some(([x]) => x === ei));
+      if (!pa.length) return;
+      body += '<p class="rel" style="margin-top:14px"><b style="color:var(--ink-2)">' + escH(withRo(p)) + ' 나온 편</b> <span>(' + escH(withI(r.n)) + ' 함께 나와요)</span></p>' +
+        groupsHtml(pa, null, a.length < 3 && pa.length <= 12, 'parent');
+    });
+    if (!a.length && !viaParents.length) {
+      const rs = S[seriesById.get('s' + r.s)];
+      const later = rs && (rs.planned || rs.upcoming) ? ' ' + withI(rs.name) + (rs.upcoming ? ' 아직 방영 전이라' : ' 방영 중이라') + ' 곧 나올 수 있어요.' : '';
+      body += '<p class="empty-note">아직 회차표에 출연 기록이 없어요.' + later + '</p>';
+    } else if (!a.length) {
+      body = '<p class="empty-note">' + escH(withI(r.n)) + ' 따로 적힌 편은 없고, 합체·팀으로 나온 편이 있어요.</p>' + body;
+    }
+    const thumb = IMG[r.n] ? '<img class="bot-thumb" src="' + IMG[r.n] + '" alt="">' : '';
+    return '<article class="bot" id="bot-' + i + '"><header class="bot-head">' + thumb + '<div class="bot-title"><h2 class="bot-name">' + nameHtml + '</h2>' +
+      '<p class="bot-meta">' + escH(meta.join(' · ')) + '</p></div><div class="bot-count" aria-label="출연 ' + a.length + '편">' + a.length + '<span>편 출연</span></div></header>' +
+      aliasHtml + (rel ? '<div class="rel">' + rel + '</div>' : '') + debutHtml + body + '</article>';
+  }
+
+  const UPCOMING_NOTE = '<p class="empty-note">아직 방영 전이라 회차·카봇 정보가 없어요. 첫 방송 뒤 회차표가 올라오면 업데이트로 채워져요.</p>';
+  function seriesCard(si) {
+    const s = S[si];
+    const eps = [];
+    E.forEach((e, ei) => { if (e[0] === si) eps.push(ei); });
+    const meta = s.upcoming ? '방영 예정' : [s.year, s.planned ? s.aired + '화까지 방영 · 전체 ' + s.planned + '화' : eps.length + '편'].filter(Boolean).join(' · ');
+    const body = s.upcoming ? UPCOMING_NOTE :
+      '<details class="grp"' + (eps.length <= 8 ? ' open' : '') + '><summary><span class="grp-name">회차 목록</span><span class="grp-n">' + eps.length + '편</span></summary>' +
+      '<ol class="ep-list">' + eps.map(ei => epRow(ei, null, false, false)).join('') + '</ol></details>';
+    return '<article class="bot"><header class="bot-head"><div class="bot-title"><h2 class="bot-name">' + escH(seriesTitle(s)) + '</h2>' +
+      '<p class="bot-meta">' + escH(meta) + '</p></div></header>' + body + '</article>';
+  }
+  function seriesBlock(list) {
+    return '<div class="bar"><p>시리즈 <b>' + list.length + '개</b></p></div><div class="list">' + list.map(seriesCard).join('') + '</div>';
+  }
+
+  const $ = id => document.getElementById(id);
+  const input = $('q'), results = $('results');
+
+  function renderDex() {
+    const groups = new Map();
+    R.forEach((r, i) => {
+      const si = firstSeries[i];
+      if (!groups.has(si)) groups.set(si, []);
+      groups.get(si).push(i);
+    });
+    S.forEach((s, si) => { if (s.upcoming && !groups.has(si)) groups.set(si, []); });
+    const keys = [...groups.keys()].sort((a, b) => a - b);
+    return '<section class="dex"><h2>카봇 도감</h2><p>' + R.length + '개 로봇을 처음 나온 시리즈별로 모았어요. 이름을 누르면 나온 편이 보여요.</p>' +
+      keys.map(si => {
+        const s = S[si];
+        const chips = groups.get(si).sort((a, b) => count[b] - count[a]).map(i =>
+          '<button class="chip" type="button" data-bot="' + i + '">' + escH(R[i].n) + (count[i] ? '<small>' + count[i] + '</small>' : '') + '</button>').join('');
+        return '<div class="dex-grp"><h3>' + escH(seriesTitle(s)) + '<span>' + (s.year || (s.upcoming ? '방영 예정' : '')) + '</span></h3>' +
+          (chips ? '<div class="chips">' + chips + '</div>' : '') + (s.upcoming ? UPCOMING_NOTE : '') + '</div>';
+      }).join('') + '</section>';
+  }
+
+  function render() {
+    const raw = input.value.trim();
+    $('clear').hidden = !raw;
+    if (!raw) { results.innerHTML = renderDex(); return; }
+    const res = search(raw);
+    if (!res || (!res.hits.length && !res.titles.length && !res.series.length)) {
+      results.innerHTML = '<div class="none"><strong>‘' + escH(raw) + '’ 카봇을 못 찾았어요</strong>이름 앞부분만 치거나 초성으로 찾아보세요. 예: ㅁㅇㅌㄱㄷ → 마이티가드</div>';
+      return;
+    }
+    const { hits, titles, series } = res;
+    let h = '';
+    if (series.length && !hits.length) h += seriesBlock(series);
+    if (hits.length) {
+      h += '<div class="bar"><p><b>' + hits.length + '개</b> 카봇을 찾았어요</p><div class="seg" role="group" aria-label="정렬">' +
+        '<button type="button" data-order="old" aria-pressed="' + (order === 'old') + '">방영순</button>' +
+        '<button type="button" data-order="new" aria-pressed="' + (order === 'new') + '">최신 시즌부터</button></div></div>';
+      h += '<div class="list">' + hits.slice(0, shown).map(robotCard).join('') + '</div>';
+      if (hits.length > shown) h += '<button class="more" type="button" data-more="1">' + (hits.length - shown) + '개 더 보기</button>';
+      if (series.length) h += seriesBlock(series);
+    }
+    if (titles.length) {
+      h += '<div class="bar"><p>제목에 ‘' + escH(raw) + '’' + (hasBatchim(raw) ? '이' : '가') + ' 들어간 편 <b>' + titles.length + '개</b></p></div>' +
+        '<div class="titles"><ol class="ep-list">' + titles.slice(0, 30).map(t => epRow(t.ei, null, false, true)).join('') + '</ol></div>';
+    }
+    results.innerHTML = h;
+    remember(hits);
+  }
+
+  // ---------- recent + popular ----------
+  let recent = [];
+  try { recent = JSON.parse(localStorage.getItem('carbot-recent') || '[]').filter(n => byName.has(n)); } catch (e) {}
+  let rememberTimer = 0;
+  function remember(hits) {
+    clearTimeout(rememberTimer);
+    if (!hits.length) return;
+    rememberTimer = setTimeout(() => {
+      const top = hits[0];
+      if (top.sc < 80 && hits.length > 1) return;   // only confident hits
+      pushRecent(R[top.i].n);
+    }, 1500);
+  }
+  function pushRecent(name) {
+    recent = [name].concat(recent.filter(n => n !== name)).slice(0, 8);
+    try { localStorage.setItem('carbot-recent', JSON.stringify(recent)); } catch (e) {}
+    drawRecent();
+  }
+  function drawRecent() {
+    $('recent-shelf').hidden = !recent.length;
+    $('recent').innerHTML = recent.map(n => '<button class="chip" type="button" data-bot="' + byName.get(n) + '">' + escH(n) + '<small>' + count[byName.get(n)] + '</small></button>').join('');
+  }
+  function drawPopular() {
+    const pinned = ['에이스', '펜타스톰'].map(n => byName.get(n));
+    const top = R.map((r, i) => i).filter(i => !pinned.includes(i)).sort((a, b) => count[b] - count[a]).slice(0, 12);
+    $('popular').innerHTML = pinned.concat(top).map((i, k) =>
+      '<button class="chip' + (k === 0 ? ' hot' : k === 1 ? ' navy' : '') + '" type="button" data-bot="' + i + '">' + escH(R[i].n) + '<small>' + count[i] + '</small></button>').join('');
+  }
+
+  // ---------- events ----------
+  let typing = 0;
+  input.addEventListener('input', () => { shown = 8; clearTimeout(typing); typing = setTimeout(render, 60); });
+  input.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); } });
+  $('clear').addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+
+  function pick(i) {
+    input.value = R[i].n;
+    shown = 8;
+    render();
+    pushRecent(R[i].n);
+    const card = document.getElementById('bot-' + i);
+    if (card) {
+      const g = card.querySelector('.grp');
+      if (g && !card.querySelector('.grp[open]')) g.open = true;
+      card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+  let toastTimer = 0;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+  document.addEventListener('click', ev => {
+    const bot = ev.target.closest('[data-bot]');
+    if (bot) { ev.preventDefault(); pick(+bot.dataset.bot); return; }
+    const sq = ev.target.closest('[data-q]');
+    if (sq) {
+      input.value = sq.dataset.q; shown = 8; render();
+      results.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      return;
+    }
+    const cp = ev.target.closest('[data-copy]');
+    if (cp) {
+      const text = cp.dataset.copy;
+      const done = () => toast('복사했어요: ' + text);
+      const fail = () => toast(text);
+      try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+      return;
+    }
+    const ord = ev.target.closest('[data-order]');
+    if (ord) {
+      order = ord.dataset.order;
+      try { localStorage.setItem('carbot-order', order); } catch (e) {}
+      const openIds = [...document.querySelectorAll('.bot')].filter(b => b.querySelector('.grp[open]')).map(b => b.id);
+      render();
+      openIds.forEach(id => { const g = document.querySelector('#' + id + ' .grp'); if (g) g.open = true; });
+      return;
+    }
+    if (ev.target.closest('[data-more]')) { shown += 12; render(); }
+  });
+
+  // on-air / upcoming status comes from the data, so a new season shows up after the next update
+  const mains = S.filter(s => s.kind === '본편');
+  const lastNo = Math.max(...mains.filter(s => s.aired).map(s => +seasonNo(s)));
+  const onAir = mains.filter(s => s.planned), soon = mains.filter(s => s.upcoming);
+  $('about').textContent = '시즌 1~' + lastNo + ' 본편·스페셜·외전·극장판 ' + E.length + '편, 로봇 ' + R.length + '개가 들어 있어요 (' + DATA.updated.replace(/-/g, '.') + ' 기준).' +
+    onAir.map(s => ' ' + withEun(s.name) + ' ' + s.aired + '화까지 방영됐어요(전체 ' + s.planned + '화).').join('') +
+    soon.map(s => ' ' + withEun(seriesTitle(s)) + ' 아직 방영 전이에요.').join('');
+  $('onair').innerHTML = onAir.map(s => '<button type="button" data-q="' + escH(s.sub || s.name) + '"><b>방영 중</b>' + escH(seriesTitle(s)) + ' · ' + s.aired + '/' + s.planned + '화</button>').join('') +
+    soon.map(s => '<button type="button" data-q="' + escH(s.sub || s.name) + '"><b class="soon">방영 예정</b>' + escH(seriesTitle(s)) + '</button>').join('');
+  $('onair').hidden = !(onAir.length || soon.length);
+  drawPopular();
+  drawRecent();
+  render();
+})();
+</script>
+
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));</script>
+</html>
