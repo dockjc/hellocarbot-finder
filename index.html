@@ -367,7 +367,7 @@ button { font: inherit; color: inherit; }
 .ep > summary:hover { background: var(--surface-2); }
 .ep[open] > summary { background: var(--navy-soft); }
 .ep-title { flex: 1 1 10em; min-width: 0; font-weight: 500; }
-.ep-cast-summary { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 400; line-height: 1.65; color: var(--ink-2); overflow-wrap: anywhere; }
+.ep-cast-summary { flex: 0 1 45%; min-width: 0; font-size: 12.5px; font-weight: 400; line-height: 1.65; color: var(--ink-2); overflow-wrap: anywhere; }
 .ep-series { display: block; font-size: 12px; font-weight: 400; color: var(--ink-3); }
 .tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .tag {
@@ -676,16 +676,15 @@ footer p { margin: 0 0 6px; }
   }
   function epRow(ei, c, debut, showSeries) {
     const e = E[ei], s = S[e[0]];
-    const castSummary = e[5].map(x => {
+    const castSummary = e[5].slice(0, 3).map(x => {
       const name = x[0] >= 0 ? R[x[0]].n : x[1];
-      const tags = (x[2] || []).map(t => TAG_LABEL[t] || t);
-      return escH(name + (tags.length ? ' (' + tags.join(', ') + ')' : ''));
+      return escH(name);
     }).join(' · ');
     const cast = e[5].map(x => x[0] >= 0
       ? '<button class="chip ghost" type="button" data-bot="' + x[0] + '">' + escH(R[x[0]].n) + '</button>'
       : '<span class="chip ghost" style="cursor:default">' + escH(x[1]) + '</span>').join('');
     return '<li><details class="ep"><summary>' + plate(s, e[1]) +
-      '<span class="ep-title">' + escH(e[2]) + (showSeries ? '<span class="ep-series">' + escH(seriesTitle(s)) + (s.year ? ' · ' + s.year : '') + '</span>' : '') + '<span class="ep-cast-summary">출연 카봇: ' + (castSummary || '기록 없음') + '</span></span>' +
+      '<span class="ep-title">' + escH(e[2]) + (showSeries ? '<span class="ep-series">' + escH(seriesTitle(s)) + (s.year ? ' · ' + s.year : '') + '</span>' : '') + '</span><span class="ep-cast-summary">' + (castSummary || '기록 없음') + (e[5].length > 3 ? ' 외 ' + (e[5].length - 3) + '명' : '') + '</span>' +
       tagsHtml(c && c[2], debut) + '</summary><div class="ep-more">' +
       (e[4] ? '<p class="ep-note">' + escH(e[4]) + '</p>' : '') +
       (e[3] ? '<p class="ep-note">방영일 ' + escH(e[3].replace(/-/g, '.')) + '</p>' : '') +
@@ -737,7 +736,7 @@ footer p { margin: 0 0 6px; }
       '<span class="debut-title">' + escH(E[d[0]][2]) + '<small>' + escH(seriesTitle(S[E[d[0]][0]])) + (S[E[d[0]][0]].year ? ' · ' + S[E[d[0]][0]].year : '') + '</small></span></div>' : '';
     let body = '';
     if (a.length) {
-      body += '<div class="eps">' + groupsHtml(a, d && d[0], a.length <= 8, '') + '</div>';
+      body += '<div class="eps">' + groupsHtml(a, d && d[0], true, '') + '</div>';
     }
     const viaParents = (r.p || []).filter(p => byName.has(p) && appear[byName.get(p)].length);
     viaParents.forEach(p => {
@@ -766,7 +765,7 @@ footer p { margin: 0 0 6px; }
     E.forEach((e, ei) => { if (e[0] === si) eps.push(ei); });
     const meta = s.upcoming ? '방영 예정' : [s.year, s.planned ? s.aired + '화까지 방영 · 전체 ' + s.planned + '화' : eps.length + '편'].filter(Boolean).join(' · ');
     const body = s.upcoming ? UPCOMING_NOTE :
-      '<details class="grp"' + (eps.length <= 8 ? ' open' : '') + '><summary><span class="grp-name">회차 목록</span><span class="grp-n">' + eps.length + '편</span></summary>' +
+      '<details class="grp" open><summary><span class="grp-name">회차 목록</span><span class="grp-n">' + eps.length + '편</span></summary>' +
       '<ol class="ep-list">' + eps.map(ei => epRow(ei, null, false, false)).join('') + '</ol></details>';
     return '<article class="bot"><header class="bot-head"><div class="bot-title"><h2 class="bot-name">' + escH(seriesTitle(s)) + '</h2>' +
       '<p class="bot-meta">' + escH(meta) + '</p></div></header>' + body + '</article>';
@@ -800,7 +799,7 @@ footer p { margin: 0 0 6px; }
   function render() {
     const raw = input.value.trim();
     $('clear').hidden = !raw;
-    if (!raw) { results.innerHTML = renderDex(); return; }
+    if (!raw) { results.innerHTML = '<div class="bar"><p>전체 편명과 출연 카봇 <b>' + E.length + '편</b></p></div><div class="list">' + S.map((s, si) => seriesCard(si)).join('') + '</div>'; return; }
     const res = search(raw);
     if (!res || (!res.hits.length && !res.titles.length && !res.series.length)) {
       results.innerHTML = '<div class="none"><strong>‘' + escH(raw) + '’ 카봇을 못 찾았어요</strong>이름 앞부분만 치거나 초성으로 찾아보세요. 예: ㅁㅇㅌㄱㄷ → 마이티가드</div>';
@@ -819,7 +818,7 @@ footer p { margin: 0 0 6px; }
     }
     if (titles.length) {
       h += '<div class="bar"><p>제목에 ‘' + escH(raw) + '’' + (hasBatchim(raw) ? '이' : '가') + ' 들어간 편 <b>' + titles.length + '개</b></p></div>' +
-        '<div class="titles"><ol class="ep-list">' + titles.slice(0, 30).map(t => epRow(t.ei, null, false, true)).join('') + '</ol></div>';
+        '<div class="titles"><ol class="ep-list">' + titles.map(t => epRow(t.ei, null, false, true)).join('') + '</ol></div>';
     }
     results.innerHTML = h;
     remember(hits);
