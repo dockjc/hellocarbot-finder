@@ -367,6 +367,7 @@ button { font: inherit; color: inherit; }
 .ep > summary:hover { background: var(--surface-2); }
 .ep[open] > summary { background: var(--navy-soft); }
 .ep-title { flex: 1 1 10em; min-width: 0; font-weight: 500; }
+.ep-cast-summary { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 400; line-height: 1.65; color: var(--ink-2); overflow-wrap: anywhere; }
 .ep-series { display: block; font-size: 12px; font-weight: 400; color: var(--ink-3); }
 .tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .tag {
@@ -675,11 +676,16 @@ footer p { margin: 0 0 6px; }
   }
   function epRow(ei, c, debut, showSeries) {
     const e = E[ei], s = S[e[0]];
+    const castSummary = e[5].map(x => {
+      const name = x[0] >= 0 ? R[x[0]].n : x[1];
+      const tags = (x[2] || []).map(t => TAG_LABEL[t] || t);
+      return escH(name + (tags.length ? ' (' + tags.join(', ') + ')' : ''));
+    }).join(' · ');
     const cast = e[5].map(x => x[0] >= 0
       ? '<button class="chip ghost" type="button" data-bot="' + x[0] + '">' + escH(R[x[0]].n) + '</button>'
       : '<span class="chip ghost" style="cursor:default">' + escH(x[1]) + '</span>').join('');
     return '<li><details class="ep"><summary>' + plate(s, e[1]) +
-      '<span class="ep-title">' + escH(e[2]) + (showSeries ? '<span class="ep-series">' + escH(seriesTitle(s)) + (s.year ? ' · ' + s.year : '') + '</span>' : '') + '</span>' +
+      '<span class="ep-title">' + escH(e[2]) + (showSeries ? '<span class="ep-series">' + escH(seriesTitle(s)) + (s.year ? ' · ' + s.year : '') + '</span>' : '') + '<span class="ep-cast-summary">출연 카봇: ' + (castSummary || '기록 없음') + '</span></span>' +
       tagsHtml(c && c[2], debut) + '</summary><div class="ep-more">' +
       (e[4] ? '<p class="ep-note">' + escH(e[4]) + '</p>' : '') +
       (e[3] ? '<p class="ep-note">방영일 ' + escH(e[3].replace(/-/g, '.')) + '</p>' : '') +
