@@ -1,6 +1,6 @@
 // Offline support for the installed app. VERSION changes with every build, so a new deploy
 // replaces the old cache the next time the app is opened online.
-const VERSION = 'd8f30e4173';
+const VERSION = '571fb99ab9';
 const CACHE = 'carbot-' + VERSION;
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 

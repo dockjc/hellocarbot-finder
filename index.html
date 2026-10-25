@@ -355,6 +355,13 @@ button { font: inherit; color: inherit; }
   font-variant-numeric: tabular-nums;
 }
 .grp.parent > summary .grp-name { color: var(--link); }
+.watch-actions { display:flex; align-items:center; gap:8px; padding:0 8px 10px; flex-wrap:wrap; }
+.watch-actions button { border:1px solid var(--line); border-radius:8px; padding:7px 12px; cursor:pointer; background:var(--surface); color:var(--ink); }
+.watch-actions button[data-watch] { background:var(--navy); color:white; }
+.watch-actions button:disabled { opacity:.4; cursor:default; }
+.watch-filter { display:block; margin:18px 0; }
+.watch-reason { margin:8px; font-size:13px; color:var(--ink-2); }
+.ep-list > li[hidden] { display:none; }
 .ep-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 2px; }
 .ep > summary {
   display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px;
@@ -526,6 +533,13 @@ footer p { margin: 0 0 6px; }
     <div class="chips" id="popular"></div>
   </section>
 
+  <section class="shelf" aria-labelledby="recommend-title">
+    <h2 id="recommend-title">다음에 볼 편 추천</h2>
+    <p id="watch-stats"></p>
+    <p class="hint">이미 본 편은 제외하고, 많이 본 편에 나오는 카봇을 우선 추천해요. 기록은 이 기기의 브라우저에 저장돼요.</p>
+    <div id="recommendations"></div>
+  </section>
+  <label class="watch-filter"><input id="unwatched-only" type="checkbox"> 안 본 편만 보기</label>
   <main id="results" aria-live="polite"></main>
 
   <footer>
@@ -546,6 +560,56 @@ footer p { margin: 0 0 6px; }
   const IMG = {};  // hero photos double as result thumbnails when the page carries them
   [['에이스', '.tcard.ace img'], ['펜타스톰', '.tcard.penta img']].forEach(([n, sel]) => { const im = document.querySelector(sel); if (im) IMG[n] = im.src; });
   const TAG_LABEL = { '특수차': '특수차 모드', '음성출연': '목소리만', '화상출연': '화상통화로', '사진출연': '사진으로', '실루엣출연': '실루엣만', '잠깐': '잠깐 등장' };
+
+
+  // Stable episode keys survive episode/robot index changes in future data updates.
+  const WATCH_KEY = 'carbot-watch-v1';
+  let watched = Object.create(null);
+  try {
+    const saved = JSON.parse(localStorage.getItem(WATCH_KEY) || '{}');
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      Object.entries(saved).forEach(([k, v]) => { if (Number.isSafeInteger(v) && v > 0) watched[k] = v; });
+    }
+  } catch (e) {}
+  function watchKey(ei) { const e = E[ei]; return JSON.stringify([S[e[0]].id, e[1]]); }
+  function watchCount(ei) { return watched[watchKey(ei)] || 0; }
+  function robotIds(ei) { return [...new Set(E[ei][5].map(c => c[0]).filter(i => i >= 0))]; }
+  function recommendationList() {
+    const scores = R.map(() => 0);
+    E.forEach((e, ei) => robotIds(ei).forEach(i => { scores[i] += watchCount(ei); }));
+    return E.map((e, ei) => {
+      const favorites = robotIds(ei).filter(i => scores[i] > 0).sort((a, b) => scores[b] - scores[a]);
+      return { ei, favorites, score: favorites.reduce((sum, i) => sum + scores[i], 0) };
+    }).filter(r => watchCount(r.ei) === 0).sort((a, b) => b.score - a.score || a.ei - b.ei).slice(0, 5);
+  }
+  function watchActions(ei) {
+    const n = watchCount(ei);
+    return '<div class="watch-actions"><span data-watch-count="' + ei + '">시청 ' + n + '회</span>' +
+      '<button type="button" data-watch="' + ei + '" aria-label="' + escH(E[ei][2]) + ' 시청 횟수 추가">시청 +1</button>' +
+      '<button type="button" data-unwatch="' + ei + '"' + (n ? '' : ' disabled') + ' aria-label="' + escH(E[ei][2]) + ' 시청 횟수 1회 취소">1회 취소</button></div>';
+  }
+  function refreshWatch() {
+    const seen = E.filter((e, ei) => watchCount(ei) > 0).length;
+    $('watch-stats').textContent = '누적 시청 ' + E.reduce((sum, e, ei) => sum + watchCount(ei), 0) + '회 · 본 편 ' + seen + '편 · 안 본 편 ' + (E.length - seen) + '편';
+    const picks = recommendationList();
+    $('recommendations').innerHTML = picks.length ? '<ol class="ep-list">' + picks.map(r =>
+      '<li><p class="watch-reason">' + (r.favorites.length ? '자주 본 카봇: ' + r.favorites.slice(0, 3).map(i => escH(R[i].n)).join(' · ') : '아직 안 본 편이에요') + '</p><ol class="ep-list">' + epRow(r.ei, null, false, true) + '</ol></li>').join('') + '</ol>' : '<p>모든 편을 시청했어요! 전체 목록에서 다시 볼 편을 골라 주세요.</p>';
+    document.querySelectorAll('[data-watch-count]').forEach(el => { el.textContent = '시청 ' + watchCount(+el.dataset.watchCount) + '회'; });
+    document.querySelectorAll('[data-unwatch]').forEach(el => { el.disabled = !watchCount(+el.dataset.unwatch); });
+    results.querySelectorAll('[data-episode]').forEach(el => { el.hidden = $('unwatched-only').checked && watchCount(+el.dataset.episode) > 0; });
+  }
+  function changeWatch(ei, delta) {
+    if (!Number.isInteger(ei) || !E[ei]) return;
+    const key = watchKey(ei), next = Math.max(0, watchCount(ei) + delta);
+    if (!Number.isSafeInteger(next)) return;
+    const updated = { ...watched };
+    if (next) updated[key] = next; else delete updated[key];
+    try { localStorage.setItem(WATCH_KEY, JSON.stringify(updated)); }
+    catch (e) { toast('시청 기록을 저장하지 못했어요. 브라우저 저장 공간 설정을 확인해 주세요.'); return; }
+    watched = updated;
+    refreshWatch();
+    toast(E[ei][2] + ' · 시청 ' + next + '회');
+  }
 
   // ---------- indexes ----------
   const byName = new Map(R.map((r, i) => [r.n, i]));
@@ -683,14 +747,14 @@ footer p { margin: 0 0 6px; }
     const cast = e[5].map(x => x[0] >= 0
       ? '<button class="chip ghost" type="button" data-bot="' + x[0] + '">' + escH(R[x[0]].n) + '</button>'
       : '<span class="chip ghost" style="cursor:default">' + escH(x[1]) + '</span>').join('');
-    return '<li><details class="ep"><summary>' + plate(s, e[1]) +
+    return '<li data-episode="' + ei + '"><details class="ep"><summary>' + plate(s, e[1]) +
       '<span class="ep-title">' + escH(e[2]) + (showSeries ? '<span class="ep-series">' + escH(seriesTitle(s)) + (s.year ? ' · ' + s.year : '') + '</span>' : '') + '</span><span class="ep-cast-summary">' + (castSummary || '기록 없음') + (e[5].length > 3 ? ' 외 ' + (e[5].length - 3) + '명' : '') + '</span>' +
       tagsHtml(c && c[2], debut) + '</summary><div class="ep-more">' +
       (e[4] ? '<p class="ep-note">' + escH(e[4]) + '</p>' : '') +
       (e[3] ? '<p class="ep-note">방영일 ' + escH(e[3].replace(/-/g, '.')) + '</p>' : '') +
       '<p class="ep-cast-label">이 편에 나오는 카봇</p><div class="chips">' + (cast || '<span class="ep-note">기록 없음</span>') + '</div>' +
       '<button class="copy" type="button" data-copy="' + escH(copyText(e)) + '">제목 복사</button>' +
-      '</div></details></li>';
+      '</div></details>' + watchActions(ei) + '</li>';
   }
   function groupsHtml(list, debutEi, openAll, cls) {
     const groups = new Map();
@@ -796,7 +860,7 @@ footer p { margin: 0 0 6px; }
       }).join('') + '</section>';
   }
 
-  function render() {
+  function renderResults() {
     const raw = input.value.trim();
     $('clear').hidden = !raw;
     if (!raw) { results.innerHTML = '<div class="bar"><p>전체 편명과 출연 카봇 <b>' + E.length + '편</b></p></div><div class="list">' + S.map((s, si) => seriesCard(si)).join('') + '</div>'; return; }
@@ -824,6 +888,17 @@ footer p { margin: 0 0 6px; }
     remember(hits);
   }
 
+  function render() { renderResults(); refreshWatch(); }
+  $('unwatched-only').addEventListener('change', refreshWatch);
+  window.addEventListener('storage', ev => {
+    if (ev.key !== WATCH_KEY && ev.key !== null) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(WATCH_KEY) || '{}');
+      watched = Object.create(null);
+      if (saved && typeof saved === 'object' && !Array.isArray(saved)) Object.entries(saved).forEach(([k, v]) => { if (Number.isSafeInteger(v) && v > 0) watched[k] = v; });
+      refreshWatch();
+    } catch (e) {}
+  });
   // ---------- recent + popular ----------
   let recent = [];
   try { recent = JSON.parse(localStorage.getItem('carbot-recent') || '[]').filter(n => byName.has(n)); } catch (e) {}
@@ -879,6 +954,8 @@ footer p { margin: 0 0 6px; }
     toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
   }
   document.addEventListener('click', ev => {
+    const watch = ev.target.closest('[data-watch], [data-unwatch]');
+    if (watch) { changeWatch(+(watch.dataset.watch ?? watch.dataset.unwatch), watch.hasAttribute('data-watch') ? 1 : -1); return; }
     const bot = ev.target.closest('[data-bot]');
     if (bot) { ev.preventDefault(); pick(+bot.dataset.bot); return; }
     const sq = ev.target.closest('[data-q]');
